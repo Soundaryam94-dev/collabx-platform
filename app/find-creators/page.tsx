@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Search, Filter, Star, Users, TrendingUp, Instagram, Youtube, ArrowRight } from "lucide-react";
+import { Search, Filter, Star, Users, TrendingUp, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import Navbar from "@/components/layout/Navbar";
