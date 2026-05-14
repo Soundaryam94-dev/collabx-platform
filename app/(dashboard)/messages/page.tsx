@@ -29,6 +29,7 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true);
   const [newEmail, setNewEmail] = useState("");
   const [showNew, setShowNew] = useState(false);
+  const [newEmailError, setNewEmailError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
 
@@ -90,7 +91,7 @@ export default function MessagesPage() {
       .eq("email", newEmail.trim())
       .single();
 
-    if (!profile) { alert("User not found with that email."); return; }
+    if (!profile) { setNewEmailError("No user found with that email address."); return; }
 
     const { data: myProfile } = await supabase.from("profiles").select("role").eq("id", userId).single();
     const myRole = myProfile?.role;
@@ -272,7 +273,7 @@ export default function MessagesPage() {
         {showNew && (
           <>
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setShowNew(false)} className="fixed inset-0 bg-black/50 z-50" />
+              onClick={() => { setShowNew(false); setNewEmailError(null); }} className="fixed inset-0 bg-black/50 z-50" />
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
               className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
               <div className="glass rounded-2xl border border-white/10 p-6 w-full max-w-sm pointer-events-auto">
@@ -280,10 +281,15 @@ export default function MessagesPage() {
                   <h3 className="font-bold text-white">New Conversation</h3>
                   <button onClick={() => setShowNew(false)} className="text-[#A1A1AA] hover:text-white cursor-pointer"><X size={18} /></button>
                 </div>
-                <input value={newEmail} onChange={(e) => setNewEmail(e.target.value)}
+                <input value={newEmail} onChange={(e) => { setNewEmail(e.target.value); setNewEmailError(null); }}
                   placeholder="Enter user email…"
                   onKeyDown={(e) => e.key === "Enter" && handleNewConversation()}
-                  className="w-full glass rounded-xl px-4 py-3 text-sm text-white placeholder-[#A1A1AA] border border-white/10 focus:border-[#7C5CFF] focus:outline-none mb-4" />
+                  className="w-full glass rounded-xl px-4 py-3 text-sm text-white placeholder-[#A1A1AA] border border-white/10 focus:border-[#7C5CFF] focus:outline-none mb-3" />
+                {newEmailError && (
+                  <p className="text-xs text-red-400 mb-3 flex items-center gap-1.5">
+                    <span>✕</span> {newEmailError}
+                  </p>
+                )}
                 <button onClick={handleNewConversation}
                   className="w-full py-2.5 rounded-xl bg-gradient-to-br from-[#7C5CFF] to-[#A855F7] text-white text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer">
                   Start Conversation

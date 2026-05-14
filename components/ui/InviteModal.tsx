@@ -34,6 +34,7 @@ export default function InviteModal({ creator, onClose, mode = "brand-to-creator
   const isBrandMode = mode === "brand-to-creator";
   const [step, setStep] = useState<"form" | "sent">("form");
   const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [userProfile, setUserProfile] = useState<{ email: string; full_name: string } | null>(null);
 
   useEffect(() => {
@@ -91,6 +92,7 @@ export default function InviteModal({ creator, onClose, mode = "brand-to-creator
           platforms: selectedPlatforms.join(", ") || "Instagram",
         };
 
+    setError(null);
     try {
       const res = await fetch("/api/invite", {
         method: "POST",
@@ -101,7 +103,7 @@ export default function InviteModal({ creator, onClose, mode = "brand-to-creator
       if (!res.ok) throw new Error(data.error ?? "Failed to send");
       setStep("sent");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to send invite.");
+      setError(err instanceof Error ? err.message : "Failed to send invite.");
     } finally {
       setSending(false);
     }
@@ -239,6 +241,14 @@ export default function InviteModal({ creator, onClose, mode = "brand-to-creator
                         : "Your proposal email with Accept / Decline buttons will be sent to the brand instantly. Once they respond, you'll be notified and both dashboards update."}
                     </p>
                   </div>
+
+                  {/* Error banner */}
+                  {error && (
+                    <div className="mx-6 mb-2 flex items-start gap-2 rounded-xl px-4 py-3 text-sm text-red-400 bg-red-500/10 border border-red-500/20">
+                      <span className="mt-0.5 flex-shrink-0">✕</span>
+                      <span>{error}</span>
+                    </div>
+                  )}
 
                   {/* Footer */}
                   <div className="flex gap-3 px-6 pb-6">
