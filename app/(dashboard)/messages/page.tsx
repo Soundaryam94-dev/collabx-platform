@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Search, MessageSquare, Plus, X } from "lucide-react";
@@ -19,7 +19,7 @@ type Conversation = {
   creator: Profile[];
 };
 
-export default function MessagesPage() {
+function MessagesContent() {
   const searchParams = useSearchParams();
   const [userId, setUserId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -322,5 +322,13 @@ export default function MessagesPage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-20"><div className="w-8 h-8 rounded-full border-2 border-[#7C5CFF] border-t-transparent animate-spin" /></div>}>
+      <MessagesContent />
+    </Suspense>
   );
 }
