@@ -87,7 +87,7 @@ export default function SignupPage() {
                   </span>
                   <span className="text-xs text-[#A1A1AA] text-center">
                     {role === "creator"
-                      ? "Create content & get paid"
+                      ? "Create content & grow your brand"
                       : "Find & hire creators"}
                   </span>
                 </button>

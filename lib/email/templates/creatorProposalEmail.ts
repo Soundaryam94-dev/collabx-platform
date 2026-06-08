@@ -5,7 +5,6 @@ export interface CreatorProposalEmailData {
   creatorFollowers: string;
   campaignName: string;
   proposalDetails: string;
-  paymentExpected: number;
   timeline: string;
   platforms: string;
   acceptUrl: string;
@@ -84,11 +83,7 @@ export function creatorProposalEmailHtml(d: CreatorProposalEmailData): string {
                     <p style="color:#fff;font-size:17px;font-weight:800;margin:0 0 16px;">${d.campaignName}</p>
                     <table width="100%">
                       <tr>
-                        <td style="width:50%;padding:6px 0;border-top:1px solid rgba(255,255,255,0.06);">
-                          <p style="color:#A1A1AA;font-size:11px;margin:0 0 2px;">Rate</p>
-                          <p style="color:#10B981;font-size:13px;font-weight:700;margin:0;">$${d.paymentExpected.toLocaleString()}</p>
-                        </td>
-                        <td style="padding:6px 0 6px 16px;border-top:1px solid rgba(255,255,255,0.06);">
+                        <td colspan="2" style="padding:6px 0;border-top:1px solid rgba(255,255,255,0.06);">
                           <p style="color:#A1A1AA;font-size:11px;margin:0 0 2px;">Timeline</p>
                           <p style="color:#fff;font-size:13px;font-weight:600;margin:0;">${d.timeline}</p>
                         </td>
@@ -154,7 +149,6 @@ export function creatorProposalEmailText(d: CreatorProposalEmailData): string {
 ${d.creatorName} (${d.creatorNiche}, ${d.creatorFollowers} followers) has sent you a collaboration proposal on CollabX.
 
 Campaign: ${d.campaignName}
-Rate: $${d.paymentExpected}
 Timeline: ${d.timeline}
 Platforms: ${d.platforms}
 ${d.proposalDetails ? `Message: ${d.proposalDetails}` : ""}

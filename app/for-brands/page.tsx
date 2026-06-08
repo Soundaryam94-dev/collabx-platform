@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Megaphone, Users, BarChart2, CreditCard, CheckCircle, ArrowRight, Zap, Star } from "lucide-react";
+import { Megaphone, Users, BarChart2, CheckCircle, ArrowRight, Zap, Star } from "lucide-react";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
 import Navbar from "@/components/layout/Navbar";
@@ -25,26 +25,21 @@ const features = [
     title: "Real-Time Analytics",
     desc: "Track reach, impressions, engagement, and ROI across all your active campaigns.",
   },
-  {
-    icon: CreditCard,
-    color: "#8B5CF6",
-    title: "Secure Payments",
-    desc: "Pay creators automatically when content is approved. Full payment history and invoices.",
-  },
+
 ];
 
 const steps = [
   { step: "01", title: "Create your brand profile", desc: "Sign up and tell creators who you are and what you're looking for." },
   { step: "02", title: "Find & invite creators", desc: "Browse the creator marketplace and send collaboration invites instantly." },
   { step: "03", title: "Manage campaigns", desc: "Track deliverables, review content, and approve posts — all in one place." },
-  { step: "04", title: "Pay & measure results", desc: "Release payments on approval and measure campaign performance in real time." },
+  { step: "04", title: "Track & measure results", desc: "Monitor collaboration status, review content, and measure campaign performance in real time." },
 ];
 
 const stats = [
   { value: "10K+", label: "Verified Creators" },
   { value: "98%", label: "Campaign Success Rate" },
   { value: "4.2x", label: "Average ROI" },
-  { value: "$2M+", label: "Creator Payouts" },
+  { value: "20+", label: "Content Niches" },
 ];
 
 export default function ForBrandsPage() {
@@ -97,7 +92,7 @@ export default function ForBrandsPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-extrabold text-white mb-3">Everything you need to run creator campaigns</h2>
-            <p className="text-[#A1A1AA]">From discovery to payment, CollabX handles the entire workflow.</p>
+            <p className="text-[#A1A1AA]">From discovery to collaboration, CollabX handles the entire workflow.</p>
           </div>
           <div className="grid sm:grid-cols-2 gap-6">
             {features.map((f, i) => (

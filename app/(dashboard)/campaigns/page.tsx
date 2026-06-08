@@ -1,75 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Plus, Search, Filter, Megaphone, TrendingUp, Users } from "lucide-react";
+import { Plus, Search, Megaphone, Users, DollarSign, Calendar } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
+import { createClient } from "@/lib/supabase/client";
 
-const campaigns = [
-  {
-    id: "1",
-    name: "Summer Collection Launch",
-    goal: "Product Promotion",
-    budget: "$3,200",
-    creators: 6,
-    reach: "480K",
-    status: "active",
-    category: "Fashion",
-    startDate: "Jun 1",
-    endDate: "Jun 30",
-  },
-  {
-    id: "2",
-    name: "App Install Drive Q2",
-    goal: "App Installs",
-    budget: "$2,100",
-    creators: 4,
-    reach: "310K",
-    status: "active",
-    category: "Tech",
-    startDate: "May 15",
-    endDate: "Jun 15",
-  },
-  {
-    id: "3",
-    name: "Brand Awareness Campaign",
-    goal: "Brand Awareness",
-    budget: "$4,800",
-    creators: 8,
-    reach: "720K",
-    status: "active",
-    category: "Lifestyle",
-    startDate: "Jun 5",
-    endDate: "Jul 5",
-  },
-  {
-    id: "4",
-    name: "Holiday Season Push",
-    goal: "Sales Conversion",
-    budget: "$2,800",
-    creators: 0,
-    reach: "—",
-    status: "draft",
-    category: "Fashion",
-    startDate: "Dec 1",
-    endDate: "Dec 25",
-  },
-  {
-    id: "5",
-    name: "Social Media Growth",
-    goal: "Social Media Growth",
-    budget: "$1,500",
-    creators: 3,
-    reach: "180K",
-    status: "paused",
-    category: "Lifestyle",
-    startDate: "May 1",
-    endDate: "May 31",
-  },
-];
+type Campaign = {
+  id: string;
+  title: string;
+  goal: string | null;
+  category: string | null;
+  budget: number | null;
+  start_date: string | null;
+  end_date: string | null;
+  status: string;
+  created_at: string;
+};
 
 const statusVariant: Record<string, "green" | "gray" | "orange" | "purple"> = {
   active: "green",
@@ -80,16 +30,48 @@ const statusVariant: Record<string, "green" | "gray" | "orange" | "purple"> = {
 
 const FILTERS = ["All", "Active", "Draft", "Paused", "Completed"];
 
+function formatDate(d: string | null) {
+  if (!d) return "—";
+  return new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function formatGoal(goal: string | null) {
+  if (!goal) return "—";
+  return goal.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 export default function CampaignsPage() {
   const router = useRouter();
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("All");
   const [search, setSearch] = useState("");
 
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return;
+      const { data } = await supabase
+        .from("campaigns")
+        .select("id, title, goal, category, budget, start_date, end_date, status, created_at")
+        .eq("brand_id", user.id)
+        .order("created_at", { ascending: false });
+      setCampaigns(data ?? []);
+      setLoading(false);
+    });
+  }, []);
+
   const filtered = campaigns.filter((c) => {
     const matchesFilter = filter === "All" || c.status === filter.toLowerCase();
-    const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = c.title.toLowerCase().includes(search.toLowerCase());
     return matchesFilter && matchesSearch;
   });
+
+  if (loading) return (
+    <div className="flex justify-center py-20">
+      <div className="w-8 h-8 rounded-full border-2 border-[#7C5CFF] border-t-transparent animate-spin" />
+    </div>
+  );
 
   return (
     <div className="space-y-6">
@@ -99,12 +81,10 @@ export default function CampaignsPage() {
           <p className="text-[#A1A1AA] text-sm mt-1">Manage all your influencer campaigns</p>
         </div>
         <Button variant="primary" size="md" onClick={() => router.push("/campaigns/new")}>
-          <Plus size={16} />
-          New Campaign
+          <Plus size={16} /> New Campaign
         </Button>
       </div>
 
-      {/* Search + Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A1A1AA]" />
@@ -133,62 +113,70 @@ export default function CampaignsPage() {
         </div>
       </div>
 
-      {/* Campaign cards */}
-      <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-4">
-        {filtered.map((campaign, i) => (
-          <motion.div
-            key={campaign.id}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.07 }}
-          >
-            <Card
-              className="cursor-pointer"
-              onClick={() => router.push(`/campaigns/${campaign.id}`)}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-[#7C5CFF]/20 flex items-center justify-center">
-                  <Megaphone size={18} className="text-[#A855F7]" />
-                </div>
-                <Badge variant={statusVariant[campaign.status]}>{campaign.status}</Badge>
-              </div>
-
-              <h3 className="font-bold text-white mb-1">{campaign.name}</h3>
-              <p className="text-xs text-[#A1A1AA] mb-4">{campaign.goal} · {campaign.category}</p>
-
-              <div className="grid grid-cols-3 gap-2 text-center mb-4">
-                <div className="glass rounded-xl p-2">
-                  <p className="text-sm font-bold text-white">{campaign.budget}</p>
-                  <p className="text-[10px] text-[#A1A1AA]">Budget</p>
-                </div>
-                <div className="glass rounded-xl p-2">
-                  <p className="text-sm font-bold text-white">{campaign.creators}</p>
-                  <p className="text-[10px] text-[#A1A1AA]">Creators</p>
-                </div>
-                <div className="glass rounded-xl p-2">
-                  <p className="text-sm font-bold text-white">{campaign.reach}</p>
-                  <p className="text-[10px] text-[#A1A1AA]">Reach</p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between text-xs text-[#A1A1AA]">
-                <span>{campaign.startDate} → {campaign.endDate}</span>
-                <span className="flex items-center gap-1 text-[#7C5CFF]">
-                  <Users size={12} /> {campaign.creators} creators
-                </span>
-              </div>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
-
-      {filtered.length === 0 && (
+      {filtered.length === 0 ? (
         <div className="text-center py-16">
           <Megaphone size={40} className="text-[#A1A1AA] mx-auto mb-3" />
-          <p className="text-[#A1A1AA]">No campaigns found</p>
-          <Button variant="primary" size="md" onClick={() => router.push("/campaigns/new")} className="mt-4">
-            Create your first campaign
-          </Button>
+          <p className="text-white font-semibold mb-1">
+            {search || filter !== "All" ? "No campaigns match" : "No campaigns yet"}
+          </p>
+          <p className="text-[#A1A1AA] text-sm mb-4">
+            {search || filter !== "All" ? "Try a different search or filter." : "Create your first campaign to start finding creators."}
+          </p>
+          {!search && filter === "All" && (
+            <Button variant="primary" size="md" onClick={() => router.push("/campaigns/new")}>
+              <Plus size={15} /> Create Campaign
+            </Button>
+          )}
+        </div>
+      ) : (
+        <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filtered.map((campaign, i) => (
+            <motion.div
+              key={campaign.id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.07 }}
+            >
+              <Card className="cursor-pointer flex flex-col gap-4">
+                <div className="flex items-start justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-[#7C5CFF]/20 flex items-center justify-center">
+                    <Megaphone size={18} className="text-[#A855F7]" />
+                  </div>
+                  <Badge variant={statusVariant[campaign.status] ?? "gray"}>{campaign.status}</Badge>
+                </div>
+
+                <div>
+                  <h3 className="font-bold text-white">{campaign.title}</h3>
+                  <p className="text-xs text-[#A1A1AA] mt-0.5">
+                    {formatGoal(campaign.goal)}{campaign.category ? ` · ${campaign.category}` : ""}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-center">
+                  <div className="glass rounded-xl p-2.5">
+                    <p className="text-sm font-bold text-white flex items-center justify-center gap-1">
+                      <DollarSign size={11} className="text-emerald-400" />
+                      {campaign.budget ? campaign.budget.toLocaleString() : "—"}
+                    </p>
+                    <p className="text-[10px] text-[#A1A1AA]">Budget</p>
+                  </div>
+                  <div className="glass rounded-xl p-2.5">
+                    <p className="text-sm font-bold text-white flex items-center justify-center gap-1">
+                      <Users size={11} className="text-[#A855F7]" /> 0
+                    </p>
+                    <p className="text-[10px] text-[#A1A1AA]">Creators</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-[#A1A1AA]">
+                  <span className="flex items-center gap-1">
+                    <Calendar size={11} />
+                    {formatDate(campaign.start_date)} → {formatDate(campaign.end_date)}
+                  </span>
+                </div>
+              </Card>
+            </motion.div>
+          ))}
         </div>
       )}
     </div>

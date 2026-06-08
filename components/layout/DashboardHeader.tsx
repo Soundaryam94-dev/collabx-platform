@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Search, Menu, X, LogOut, Zap, LayoutDashboard, Megaphone, Users, MessageSquare, BarChart2, CreditCard, FileText, Settings } from "lucide-react";
+import { Menu, X, LogOut, Zap, LayoutDashboard, Megaphone, Users, MessageSquare, FileText, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -19,8 +19,6 @@ const brandNav = [
   { label: "Find Creators", href: "/creators", icon: Users },
   { label: "Collaborations", href: "/collaborations", icon: FileText },
   { label: "Messages", href: "/messages", icon: MessageSquare },
-  { label: "Analytics", href: "/analytics", icon: BarChart2 },
-  { label: "Payments", href: "/payments", icon: CreditCard },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -29,8 +27,6 @@ const creatorNav = [
   { label: "Collaborations", href: "/collaborations", icon: FileText },
   { label: "Find Brands", href: "/brands", icon: Megaphone },
   { label: "Messages", href: "/messages", icon: MessageSquare },
-  { label: "Analytics", href: "/analytics", icon: BarChart2 },
-  { label: "Earnings", href: "/payments", icon: CreditCard },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -52,22 +48,7 @@ export default function DashboardHeader({ title, role, userEmail, onLogout }: Da
 
         <h1 className="text-lg font-bold text-white hidden lg:block">{title}</h1>
 
-        <div className="flex-1 max-w-md hidden lg:block">
-          <div className="relative">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#A1A1AA]" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full glass rounded-xl pl-9 pr-4 py-2 text-sm text-white placeholder-[#A1A1AA] border border-white/10 focus:border-[#7C5CFF] focus:outline-none transition-colors"
-            />
-          </div>
-        </div>
-
         <div className="flex items-center gap-2 ml-auto">
-          <button className="relative p-2 rounded-lg text-[#A1A1AA] hover:text-white hover:bg-white/10 transition-colors">
-            <Bell size={18} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#A855F7]" />
-          </button>
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#7C5CFF] to-[#A855F7] flex items-center justify-center text-xs font-bold text-white">
             {userEmail?.[0]?.toUpperCase() ?? "U"}
           </div>

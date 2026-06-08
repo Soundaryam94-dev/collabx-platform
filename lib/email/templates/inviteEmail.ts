@@ -4,7 +4,6 @@ export interface InviteEmailData {
   campaignName: string;
   campaignGoal: string;
   deliverables: string;
-  paymentAmount: number;
   deadline: string;
   notes: string;
   acceptUrl: string;
@@ -58,18 +57,14 @@ export function inviteEmailHtml(d: InviteEmailData): string {
                           <p style="color:#fff;font-size:13px;font-weight:600;margin:0;">${d.campaignGoal}</p>
                         </td>
                         <td style="width:50%;padding:8px 0 8px 16px;border-top:1px solid rgba(255,255,255,0.06);">
-                          <p style="color:#A1A1AA;font-size:11px;margin:0 0 2px;">Payment</p>
-                          <p style="color:#10B981;font-size:13px;font-weight:700;margin:0;">$${d.paymentAmount.toLocaleString()}</p>
+                          <p style="color:#A1A1AA;font-size:11px;margin:0 0 2px;">Deadline</p>
+                          <p style="color:#fff;font-size:13px;font-weight:600;margin:0;">${d.deadline}</p>
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding:8px 0;border-top:1px solid rgba(255,255,255,0.06);">
+                        <td colspan="2" style="padding:8px 0;border-top:1px solid rgba(255,255,255,0.06);">
                           <p style="color:#A1A1AA;font-size:11px;margin:0 0 2px;">Deliverables</p>
                           <p style="color:#fff;font-size:13px;font-weight:600;margin:0;">${d.deliverables}</p>
-                        </td>
-                        <td style="padding:8px 0 8px 16px;border-top:1px solid rgba(255,255,255,0.06);">
-                          <p style="color:#A1A1AA;font-size:11px;margin:0 0 2px;">Deadline</p>
-                          <p style="color:#fff;font-size:13px;font-weight:600;margin:0;">${d.deadline}</p>
                         </td>
                       </tr>
                     </table>
@@ -133,7 +128,6 @@ ${d.brandName} has invited you to collaborate on CollabX.
 
 Campaign: ${d.campaignName}
 Goal: ${d.campaignGoal}
-Payment: $${d.paymentAmount}
 Deliverables: ${d.deliverables}
 Deadline: ${d.deadline}
 ${d.notes ? `Notes: ${d.notes}` : ""}

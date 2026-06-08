@@ -5,7 +5,6 @@ import {
   Search,
   FileText,
   BarChart2,
-  CreditCard,
   MessageSquare,
   Sparkles,
 } from "lucide-react";
@@ -41,13 +40,6 @@ const features = [
     color: "#8B5CF6",
   },
   {
-    icon: CreditCard,
-    title: "Secure Payments",
-    description:
-      "Automated invoicing and creator payments. Funds released on campaign milestone completion.",
-    color: "#7C3AED",
-  },
-  {
     icon: MessageSquare,
     title: "Collaboration Hub",
     description:
@@ -76,7 +68,7 @@ export default function FeaturesSection() {
             <span className="gradient-text">Creator Economy</span>
           </h2>
           <p className="text-[#A1A1AA] text-lg max-w-2xl mx-auto">
-            From discovery to payment — CollabX handles the entire influencer
+            From discovery to collaboration — CollabX handles the entire influencer
             marketing workflow so you can focus on results.
           </p>
         </motion.div>

@@ -16,7 +16,6 @@ export interface InvitePayload {
   campaignName: string;
   campaignGoal: string;
   deliverables: string;
-  paymentAmount: number;
   deadline: string;
   notes: string;
 }
@@ -36,7 +35,6 @@ export async function sendInviteEmail(payload: InvitePayload) {
       campaignName: payload.campaignName,
       campaignGoal: payload.campaignGoal,
       deliverables: payload.deliverables,
-      paymentAmount: payload.paymentAmount,
       deadline: payload.deadline,
       notes: payload.notes,
       acceptUrl,
@@ -48,7 +46,6 @@ export async function sendInviteEmail(payload: InvitePayload) {
       campaignName: payload.campaignName,
       campaignGoal: payload.campaignGoal,
       deliverables: payload.deliverables,
-      paymentAmount: payload.paymentAmount,
       deadline: payload.deadline,
       notes: payload.notes,
       acceptUrl,
@@ -66,7 +63,6 @@ export async function sendAcceptedEmail(payload: {
   brandName: string;
   creatorName: string;
   campaignName: string;
-  paymentAmount: number;
   deadline: string;
 }) {
   const { error } = await resend.emails.send({
@@ -77,7 +73,6 @@ export async function sendAcceptedEmail(payload: {
       brandName: payload.brandName,
       creatorName: payload.creatorName,
       campaignName: payload.campaignName,
-      paymentAmount: payload.paymentAmount,
       deadline: payload.deadline,
       dashboardUrl: `${APP_URL}/dashboard`,
     }),
@@ -122,7 +117,6 @@ export interface CreatorProposalPayload {
   creatorFollowers: string;
   campaignName: string;
   proposalDetails: string;
-  paymentExpected: number;
   timeline: string;
   platforms: string;
 }
@@ -143,7 +137,6 @@ export async function sendCreatorProposalEmail(payload: CreatorProposalPayload) 
       creatorFollowers: payload.creatorFollowers,
       campaignName: payload.campaignName,
       proposalDetails: payload.proposalDetails,
-      paymentExpected: payload.paymentExpected,
       timeline: payload.timeline,
       platforms: payload.platforms,
       acceptUrl,
@@ -156,7 +149,6 @@ export async function sendCreatorProposalEmail(payload: CreatorProposalPayload) 
       creatorFollowers: payload.creatorFollowers,
       campaignName: payload.campaignName,
       proposalDetails: payload.proposalDetails,
-      paymentExpected: payload.paymentExpected,
       timeline: payload.timeline,
       platforms: payload.platforms,
       acceptUrl,
@@ -174,7 +166,6 @@ export async function sendProposalAcceptedEmail(payload: {
   creatorName: string;
   brandName: string;
   campaignName: string;
-  paymentAmount: number;
 }) {
   const { error } = await resend.emails.send({
     from: FROM_EMAIL,
@@ -184,7 +175,6 @@ export async function sendProposalAcceptedEmail(payload: {
       creatorName: payload.creatorName,
       brandName: payload.brandName,
       campaignName: payload.campaignName,
-      paymentAmount: payload.paymentAmount,
       dashboardUrl: `${APP_URL}/dashboard`,
     }),
   });

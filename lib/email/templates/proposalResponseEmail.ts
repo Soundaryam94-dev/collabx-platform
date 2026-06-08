@@ -2,7 +2,6 @@ export interface ProposalAcceptedEmailData {
   creatorName: string;
   brandName: string;
   campaignName: string;
-  paymentAmount: number;
   dashboardUrl: string;
 }
 
@@ -43,8 +42,8 @@ export function proposalAcceptedEmailHtml(d: ProposalAcceptedEmailData): string 
                           <p style="color:#fff;font-size:13px;font-weight:600;margin:0;">${d.brandName}</p>
                         </td>
                         <td style="width:50%;padding:6px 0 6px 16px;border-top:1px solid rgba(255,255,255,0.06);">
-                          <p style="color:#A1A1AA;font-size:11px;margin:0 0 2px;">Payment Agreed</p>
-                          <p style="color:#10B981;font-size:13px;font-weight:700;margin:0;">$${d.paymentAmount.toLocaleString()}</p>
+                          <p style="color:#A1A1AA;font-size:11px;margin:0 0 2px;">Status</p>
+                          <p style="color:#10B981;font-size:13px;font-weight:700;margin:0;">Active</p>
                         </td>
                       </tr>
                     </table>

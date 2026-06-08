@@ -47,8 +47,6 @@ export default function DashboardLayout({
     "/collaborations": "Collaborations",
     "/brands": "Find Brands",
     "/messages": "Messages",
-    "/analytics": "Analytics",
-    "/payments": "Payments",
     "/settings": "Settings",
   };
   const pageTitle = pageTitles[pathname] ?? pageTitles[Object.keys(pageTitles).find(k => k !== "/dashboard" && pathname.startsWith(k)) ?? ""] ?? "Dashboard";

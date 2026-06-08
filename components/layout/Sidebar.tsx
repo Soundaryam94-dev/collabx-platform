@@ -8,10 +8,8 @@ import {
   Megaphone,
   Users,
   MessageSquare,
-  BarChart2,
   Settings,
   Zap,
-  CreditCard,
   FileText,
   LogOut,
 } from "lucide-react";
@@ -22,8 +20,6 @@ const brandNav = [
   { label: "Find Creators", href: "/creators", icon: Users },
   { label: "Collaborations", href: "/collaborations", icon: FileText },
   { label: "Messages", href: "/messages", icon: MessageSquare },
-  { label: "Analytics", href: "/analytics", icon: BarChart2 },
-  { label: "Payments", href: "/payments", icon: CreditCard },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -32,8 +28,6 @@ const creatorNav = [
   { label: "Collaborations", href: "/collaborations", icon: FileText },
   { label: "Find Brands", href: "/brands", icon: Megaphone },
   { label: "Messages", href: "/messages", icon: MessageSquare },
-  { label: "Analytics", href: "/analytics", icon: BarChart2 },
-  { label: "Earnings", href: "/payments", icon: CreditCard },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 

@@ -39,7 +39,6 @@ export async function POST(request: NextRequest) {
         creator_id: creatorId,
         brand_id: brandId,
         status: "invited",
-        payment_amount: body.paymentAmount ?? body.paymentExpected,
         deliverables: body.deliverables ?? body.platforms,
         posting_timeline: body.deadline ?? body.timeline,
         content_requirements: body.notes ?? body.proposalDetails,

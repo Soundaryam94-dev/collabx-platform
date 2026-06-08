@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FileText, CheckCircle, Clock, ChevronRight, DollarSign, Calendar, X } from "lucide-react";
+import { FileText, CheckCircle, Clock, ChevronRight, Calendar, X } from "lucide-react";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
@@ -12,7 +12,6 @@ import { getCollaborations } from "@/lib/supabase/queries";
 type Collab = {
   id: string;
   status: string;
-  payment_amount: number | null;
   deliverables: string | null;
   created_at: string;
   updated_at: string;
@@ -125,7 +124,6 @@ export default function CollaborationsPage() {
                       </p>
                       <p className="text-xs text-[#A1A1AA] mt-0.5">
                         {c.profiles?.[0]?.full_name ?? (user?.role === "brand" ? "Creator" : "Brand")}
-                        {c.payment_amount ? ` · $${c.payment_amount.toLocaleString()}` : ""}
                       </p>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
@@ -181,12 +179,6 @@ export default function CollaborationsPage() {
                       <span className="text-[#A1A1AA] text-sm">{user?.role === "brand" ? "Creator" : "Brand"}</span>
                       <span className="text-white font-semibold text-sm">
                         {selected.profiles?.[0]?.full_name ?? selected.profiles?.[0]?.email ?? "—"}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[#A1A1AA] text-sm flex items-center gap-1.5"><DollarSign size={13} /> Payment</span>
-                      <span className="text-emerald-400 font-bold text-sm">
-                        {selected.payment_amount ? `$${selected.payment_amount.toLocaleString()}` : "—"}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">

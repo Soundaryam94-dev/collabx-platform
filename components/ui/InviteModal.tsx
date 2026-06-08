@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, DollarSign, Calendar, FileText, CheckCircle, Briefcase } from "lucide-react";
+import { X, Send, Calendar, FileText, CheckCircle, Briefcase } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { createClient } from "@/lib/supabase/client";
@@ -12,6 +12,7 @@ interface Target {
   name: string;
   avatar: string;
   niche: string;
+  email?: string;
 }
 
 interface InviteModalProps {
@@ -45,35 +46,48 @@ export default function InviteModal({ creator, onClose, mode = "brand-to-creator
       if (data) setUserProfile(data);
     });
   }, []);
+
   const [selectedDeliverables, setSelectedDeliverables] = useState<string[]>([]);
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([]);
+
+  // brand-to-creator: pre-fill with the creator's real email
+  // creator-to-brand: pre-fill with the brand's email
+  const prefillEmail = isBrandMode ? (creator?.email ?? "") : (brandEmail ?? "");
+
   const [form, setForm] = useState({
-    recipientEmail: brandEmail ?? "",
+    recipientEmail: prefillEmail,
     campaignName: "",
     goal: "Product Promotion",
-    paymentAmount: "",
     deadline: "",
     notes: "",
   });
+
+  // Re-sync email if creator changes (modal reused for different targets)
+  useEffect(() => {
+    setForm((p) => ({ ...p, recipientEmail: isBrandMode ? (creator?.email ?? "") : (brandEmail ?? "") }));
+    setStep("form");
+    setError(null);
+    setSelectedDeliverables([]);
+    setSelectedPlatforms([]);
+  }, [creator?.id]);
 
   const toggle = (item: string, list: string[], setter: (v: string[]) => void) =>
     setter(list.includes(item) ? list.filter((x) => x !== item) : [...list, item]);
 
   const handleSend = async () => {
-    if (!creator || !form.campaignName || !form.paymentAmount || !form.deadline) return;
+    if (!creator || !form.campaignName || !form.deadline) return;
     setSending(true);
 
     const body = isBrandMode
       ? {
           senderRole: "brand",
-          creatorEmail: form.recipientEmail || `${creator.name.toLowerCase().replace(" ", ".")}@example.com`,
+          creatorEmail: form.recipientEmail,
           creatorName: creator.name,
           brandEmail: userProfile?.email ?? "",
           brandName: userProfile?.full_name ?? "Brand",
           campaignName: form.campaignName,
           campaignGoal: form.goal,
           deliverables: selectedDeliverables.join(", ") || "TBD",
-          paymentAmount: Number(form.paymentAmount),
           deadline: form.deadline,
           notes: form.notes,
         }
@@ -87,7 +101,6 @@ export default function InviteModal({ creator, onClose, mode = "brand-to-creator
           creatorFollowers: "—",
           campaignName: form.campaignName,
           proposalDetails: form.notes,
-          paymentExpected: Number(form.paymentAmount),
           timeline: form.deadline,
           platforms: selectedPlatforms.join(", ") || "Instagram",
         };
@@ -153,15 +166,24 @@ export default function InviteModal({ creator, onClose, mode = "brand-to-creator
 
                   {/* Form body */}
                   <div className="p-6 space-y-4">
-                    <Input
-                      label={isBrandMode ? "Creator Email" : "Brand Contact Email"}
-                      type="email"
-                      placeholder={isBrandMode
-                        ? `${creator.name.toLowerCase().replace(" ", ".")}@example.com`
-                        : `contact@${creator.name.toLowerCase().replace(" ", "")}.com`}
-                      value={form.recipientEmail}
-                      onChange={(e) => setForm((p) => ({ ...p, recipientEmail: e.target.value }))}
-                    />
+                    {/* In brand-to-creator mode the creator's email is auto-filled and locked */}
+                    {isBrandMode ? (
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-[#A1A1AA]">Creator Email</label>
+                        <div className="flex items-center gap-2 glass rounded-xl px-4 py-3 border border-white/10">
+                          <span className="text-sm text-white flex-1 truncate">{form.recipientEmail || "—"}</span>
+                          <span className="text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full flex-shrink-0">auto-filled</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <Input
+                        label="Brand Contact Email"
+                        type="email"
+                        placeholder={`contact@${creator.name.toLowerCase().replace(" ", "")}.com`}
+                        value={form.recipientEmail}
+                        onChange={(e) => setForm((p) => ({ ...p, recipientEmail: e.target.value }))}
+                      />
+                    )}
                     <Input
                       label={isBrandMode ? "Campaign Name" : "Campaign / Project Name"}
                       placeholder="e.g. Summer Collection Launch"
@@ -199,25 +221,14 @@ export default function InviteModal({ creator, onClose, mode = "brand-to-creator
                       </div>
                     )}
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <Input
-                        label={isBrandMode ? "Payment ($)" : "My Rate ($)"}
-                        type="number"
-                        placeholder="e.g. 800"
-                        icon={<DollarSign size={14} />}
-                        value={form.paymentAmount}
-                        onChange={(e) => setForm((p) => ({ ...p, paymentAmount: e.target.value }))}
-                        required
-                      />
-                      <Input
-                        label="Timeline / Deadline"
-                        type="date"
-                        icon={<Calendar size={14} />}
-                        value={form.deadline}
-                        onChange={(e) => setForm((p) => ({ ...p, deadline: e.target.value }))}
-                        required
-                      />
-                    </div>
+                    <Input
+                      label="Timeline / Deadline"
+                      type="date"
+                      icon={<Calendar size={14} />}
+                      value={form.deadline}
+                      onChange={(e) => setForm((p) => ({ ...p, deadline: e.target.value }))}
+                      required
+                    />
 
                     <div className="space-y-1.5">
                       <label className="text-sm font-medium text-[#A1A1AA] flex items-center gap-1.5">
@@ -255,7 +266,7 @@ export default function InviteModal({ creator, onClose, mode = "brand-to-creator
                     <Button variant="secondary" size="md" onClick={onClose} className="flex-1">Cancel</Button>
                     <Button
                       variant="primary" size="md" onClick={handleSend}
-                      disabled={sending || !form.campaignName || !form.paymentAmount || !form.deadline}
+                      disabled={sending || !form.campaignName || !form.deadline}
                       className="flex-1"
                     >
                       {isBrandMode ? <Send size={14} /> : <Briefcase size={14} />}

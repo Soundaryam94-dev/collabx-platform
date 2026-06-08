@@ -3,21 +3,18 @@ import { createClient } from "@/lib/supabase/client";
 export async function getBrandStats(userId: string) {
   const supabase = createClient();
 
-  const [campaignsRes, collaborationsRes, spendRes] = await Promise.all([
+  const [campaignsRes, collaborationsRes] = await Promise.all([
     supabase.from("campaigns").select("id, status").eq("brand_id", userId),
-    supabase.from("collaborations").select("creator_id, status").eq("brand_id", userId),
-    supabase.from("collaborations").select("payment_amount").eq("brand_id", userId).in("status", ["approved", "completed"]),
+    supabase.from("collaborations").select("creator_id").eq("brand_id", userId),
   ]);
 
   const campaigns = campaignsRes.data ?? [];
   const collaborations = collaborationsRes.data ?? [];
-  const spend = spendRes.data ?? [];
 
   const activeCampaigns = campaigns.filter((c) => c.status === "active").length;
   const totalCreators = new Set(collaborations.map((c) => c.creator_id)).size;
-  const totalSpend = spend.reduce((sum, c) => sum + (c.payment_amount ?? 0), 0);
 
-  return { activeCampaigns, totalCampaigns: campaigns.length, totalCreators, totalSpend };
+  return { activeCampaigns, totalCampaigns: campaigns.length, totalCreators };
 }
 
 export async function getCreatorStats(userId: string) {
@@ -25,7 +22,7 @@ export async function getCreatorStats(userId: string) {
 
   const { data: collaborations } = await supabase
     .from("collaborations")
-    .select("status, payment_amount")
+    .select("status")
     .eq("creator_id", userId);
 
   const all = collaborations ?? [];
@@ -33,7 +30,6 @@ export async function getCreatorStats(userId: string) {
 
   return {
     activeCollabs: all.filter((c) => activeStatuses.includes(c.status)).length,
-    totalEarnings: all.filter((c) => c.status === "completed").reduce((s, c) => s + (c.payment_amount ?? 0), 0),
     pendingReview: all.filter((c) => c.status === "submitted").length,
     totalCollabs: all.length,
   };
@@ -57,7 +53,7 @@ export async function getCollaborations(userId: string, role: "brand" | "creator
 
   const { data } = await supabase
     .from("collaborations")
-    .select(`id, status, payment_amount, deliverables, created_at, updated_at, campaigns(title), profiles!collaborations_${joinField}_fkey(full_name, email, role)`)
+    .select(`id, status, deliverables, created_at, updated_at, campaigns(title), profiles!collaborations_${joinField}_fkey(full_name, email, role)`)
     .eq(field, userId)
     .order("updated_at", { ascending: false });
 
@@ -120,7 +116,7 @@ export async function getCreatorProfiles() {
   const supabase = createClient();
   const { data } = await supabase
     .from("profiles")
-    .select("id, full_name, email, bio, avatar_url")
+    .select("id, full_name, email, bio, avatar_url, category, followers, engagement_rate, rating, tags")
     .eq("role", "creator")
     .order("full_name");
   return data ?? [];
@@ -169,13 +165,28 @@ export async function getProfile(userId: string) {
   const supabase = createClient();
   const { data } = await supabase
     .from("profiles")
-    .select("id, full_name, email, role, bio, website")
+    .select("id, full_name, email, role, bio, website, category, followers, engagement_rate, rating, tags, industry, location, phone, instagram, youtube, linkedin")
     .eq("id", userId)
     .single();
   return data;
 }
 
-export async function updateProfile(userId: string, payload: { full_name?: string; bio?: string; website?: string }) {
+export async function updateProfile(userId: string, payload: {
+  full_name?: string;
+  bio?: string;
+  website?: string;
+  category?: string;
+  followers?: number;
+  engagement_rate?: number;
+  rating?: number;
+  tags?: string;
+  industry?: string;
+  location?: string;
+  phone?: string;
+  instagram?: string;
+  youtube?: string;
+  linkedin?: string;
+}) {
   const supabase = createClient();
   const { error } = await supabase
     .from("profiles")
@@ -184,28 +195,3 @@ export async function updateProfile(userId: string, payload: { full_name?: strin
   if (error) throw error;
 }
 
-export async function getAnalyticsData(userId: string, role: "brand" | "creator") {
-  const supabase = createClient();
-  const field = role === "brand" ? "brand_id" : "creator_id";
-
-  const [collabsRes, campaignsRes] = await Promise.all([
-    supabase.from("collaborations").select("status, payment_amount, created_at").eq(field, userId),
-    role === "brand"
-      ? supabase.from("campaigns").select("status, budget, created_at").eq("brand_id", userId)
-      : Promise.resolve({ data: [] }),
-  ]);
-
-  const collabs = collabsRes.data ?? [];
-  const campaigns = (campaignsRes as { data: { status: string; budget: number; created_at: string }[] | null }).data ?? [];
-
-  const statusCounts = collabs.reduce<Record<string, number>>((acc, c) => {
-    acc[c.status] = (acc[c.status] ?? 0) + 1;
-    return acc;
-  }, {});
-
-  const totalEarnings = collabs.filter((c) => c.status === "completed").reduce((s, c) => s + (c.payment_amount ?? 0), 0);
-  const totalPending = collabs.filter((c) => ["agreed", "in_progress", "submitted"].includes(c.status)).reduce((s, c) => s + (c.payment_amount ?? 0), 0);
-  const totalBudget = campaigns.reduce((s, c) => s + (c.budget ?? 0), 0);
-
-  return { statusCounts, totalEarnings, totalPending, totalBudget, totalCollabs: collabs.length, totalCampaigns: campaigns.length };
-}

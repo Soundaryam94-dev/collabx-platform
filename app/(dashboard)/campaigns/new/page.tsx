@@ -15,10 +15,13 @@ const GOALS = [
   { value: "app_installs", label: "App Installs" },
   { value: "sales_conversion", label: "Sales Conversion" },
   { value: "social_media_growth", label: "Social Media Growth" },
+  { value: "subscriptions", label: "Subscriptions" },
 ];
 
 const CATEGORIES = [
-  "Fashion", "Tech", "Gaming", "Fitness", "Lifestyle", "Travel", "Food", "Beauty",
+  "Entertainment", "Technology", "Fashion", "Beauty", "Food & Beverage",
+  "Fitness & Health", "Travel", "Gaming", "Lifestyle", "Education",
+  "Finance", "Music", "Sports", "Automotive", "Real Estate",
 ];
 
 export default function NewCampaignPage() {

@@ -18,6 +18,13 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Invalid request" }, { status: 400 });
   }
 
+  if (collaborationId.startsWith("pending-")) {
+    return Response.json(
+      { error: "This invitation link is outdated. Ask the brand to send you a new invite." },
+      { status: 410 }
+    );
+  }
+
   const newStatus = action === "accept" ? "agreed" : "rejected";
 
   const { data: collab, error } = await supabaseAdmin
@@ -31,6 +38,22 @@ export async function POST(request: NextRequest) {
     console.error("DB update error:", error.message);
   }
 
+  /* Auto-create conversation on accept so both parties can chat immediately */
+  if (action === "accept" && collab) {
+    const { data: existing } = await supabaseAdmin
+      .from("conversations")
+      .select("id")
+      .eq("brand_id", collab.brand_id)
+      .eq("creator_id", collab.creator_id)
+      .single();
+
+    if (!existing) {
+      await supabaseAdmin
+        .from("conversations")
+        .insert({ brand_id: collab.brand_id, creator_id: collab.creator_id });
+    }
+  }
+
   try {
     /* Brand sent original invite → notify brand of creator's response */
     if (!sender || sender === "brand") {
@@ -40,7 +63,6 @@ export async function POST(request: NextRequest) {
           brandName: collab.brand?.full_name ?? "Brand",
           creatorName: collab.creator?.full_name ?? "Creator",
           campaignName: collab.campaigns?.title ?? "Campaign",
-          paymentAmount: collab.payment_amount ?? 0,
           deadline: collab.posting_timeline ?? "",
         });
       } else if (action === "decline" && collab) {
@@ -61,7 +83,6 @@ export async function POST(request: NextRequest) {
           creatorName: collab.creator?.full_name ?? "Creator",
           brandName: collab.brand?.full_name ?? "Brand",
           campaignName: collab.campaigns?.title ?? "Campaign",
-          paymentAmount: collab.payment_amount ?? 0,
         });
       } else if (action === "decline" && collab) {
         await sendProposalDeclinedEmail({
