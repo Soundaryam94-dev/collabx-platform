@@ -48,6 +48,7 @@ export default function BrandsPage() {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<{ brand: BrandProfile; idx: number } | null>(null);
   const [proposing, setProposing] = useState<{ id: string; name: string; avatar: string; niche: string; email: string } | null>(null);
+  const [showAll, setShowAll] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [editingBio, setEditingBio] = useState(false);
   const [bioValue, setBioValue] = useState("");
@@ -77,6 +78,10 @@ export default function BrandsPage() {
     setTimeout(() => setBioSaved(false), 2500);
   };
 
+  const INITIAL_COUNT = 6;
+
+  useEffect(() => { setShowAll(false); }, [search]);
+
   const filtered = brands.filter((b) => {
     const name = b.full_name ?? b.email;
     return (
@@ -85,6 +90,8 @@ export default function BrandsPage() {
       b.email.toLowerCase().includes(search.toLowerCase())
     );
   });
+
+  const visible = showAll ? filtered : filtered.slice(0, INITIAL_COUNT);
 
   if (loading) return (
     <div className="flex justify-center py-20">
@@ -131,8 +138,9 @@ export default function BrandsPage() {
           </div>
         </Card>
       ) : (
+        <>
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filtered.map((brand, i) => {
+          {visible.map((brand, i) => {
             const displayName = brand.full_name ?? brand.email;
             const avatar = initials(brand.full_name, brand.email);
             const [c1, c2] = gradients[i % gradients.length];
@@ -213,6 +221,18 @@ export default function BrandsPage() {
             );
           })}
         </div>
+
+        {filtered.length > INITIAL_COUNT && (
+          <div className="mt-6 flex justify-center">
+            <button
+              onClick={() => setShowAll((v) => !v)}
+              className="px-8 py-3 rounded-full border border-[#7C5CFF]/50 text-white text-sm font-semibold bg-[#7C5CFF]/10 hover:bg-[#7C5CFF]/20 transition-all cursor-pointer"
+            >
+              {showAll ? "Show Less" : `Show More (${filtered.length - INITIAL_COUNT} more)`}
+            </button>
+          </div>
+        )}
+        </>
       )}
 
       {/* Profile modal */}
