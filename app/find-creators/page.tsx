@@ -43,20 +43,21 @@ export default function FindCreatorsPage() {
 
   useEffect(() => {
     const supabase = createClient();
-    supabase
-      .from("profiles")
-      .select("id, full_name, bio, category, followers, engagement_rate, rating, tags")
-      .eq("role", "creator")
-      .order("followers", { ascending: false })
-      .then(({ data, error }) => {
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id, full_name, bio, category, followers, engagement_rate, rating, tags")
+          .eq("role", "creator")
+          .order("followers", { ascending: false });
         if (error) console.error("find-creators:", error.message);
         setCreators(data ?? []);
-        setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error("find-creators fetch failed:", err);
+      } finally {
         setLoading(false);
-      });
+      }
+    })();
   }, []);
 
   useEffect(() => { setShowAll(false); }, [search, activeNiche]);
