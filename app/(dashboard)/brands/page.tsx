@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Briefcase, Globe, Sparkles, Mail, X, ExternalLink, Building2, Pencil, CheckCircle } from "lucide-react";
+import { Search, Briefcase, Globe, Sparkles, Mail, X, ExternalLink, Building2, Pencil, CheckCircle, MessageSquare } from "lucide-react";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import InviteModal from "@/components/ui/InviteModal";
@@ -49,6 +50,7 @@ function formatWebsite(url: string) {
 }
 
 export default function BrandsPage() {
+  const router = useRouter();
   const [brands, setBrands] = useState<BrandProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -386,14 +388,20 @@ export default function BrandsPage() {
                     )}
 
                     {currentUserId !== selected.brand.id && (
-                      <Button variant="primary" size="md" fullWidth
-                        onClick={() => {
-                          const b = selected.brand;
-                          setSelected(null);
-                          setProposing({ id: b.id, name: b.full_name ?? b.email, avatar: initials(b.full_name, b.email), niche: "Brand", email: b.email });
-                        }}>
-                        <Briefcase size={14} /> Propose Collaboration
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button variant="secondary" size="md" className="flex-1"
+                          onClick={() => { setSelected(null); router.push(`/messages?with=${selected.brand.id}`); }}>
+                          <MessageSquare size={14} /> Message
+                        </Button>
+                        <Button variant="primary" size="md" className="flex-1"
+                          onClick={() => {
+                            const b = selected.brand;
+                            setSelected(null);
+                            setProposing({ id: b.id, name: b.full_name ?? b.email, avatar: initials(b.full_name, b.email), niche: "Brand", email: b.email });
+                          }}>
+                          <Briefcase size={14} /> Propose
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </div>

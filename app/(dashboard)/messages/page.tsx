@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Search, MessageSquare, Plus, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -19,6 +20,7 @@ type Conversation = {
 };
 
 export default function MessagesPage() {
+  const searchParams = useSearchParams();
   const [userId, setUserId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
@@ -40,6 +42,25 @@ export default function MessagesPage() {
       const convs = await getConversations(user.id);
       setConversations(convs as unknown as Conversation[]);
       setLoading(false);
+
+      const withId = searchParams?.get("with");
+      if (withId) {
+        const { data: targetProfile } = await supabase.from("profiles").select("id, role").eq("id", withId).single();
+        const { data: myProfile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+        if (targetProfile && myProfile) {
+          const brandId = myProfile.role === "brand" ? user.id : targetProfile.id;
+          const creatorId = myProfile.role === "creator" ? user.id : targetProfile.id;
+          const { data: existing } = await supabase.from("conversations").select("id").eq("brand_id", brandId).eq("creator_id", creatorId).single();
+          let convId = existing?.id;
+          if (!convId) {
+            const { data: newConv } = await supabase.from("conversations").insert({ brand_id: brandId, creator_id: creatorId }).select("id").single();
+            convId = newConv?.id;
+            const refreshed = await getConversations(user.id);
+            setConversations(refreshed as unknown as Conversation[]);
+          }
+          if (convId) setActiveConvId(convId);
+        }
+      }
     });
   }, []);
 

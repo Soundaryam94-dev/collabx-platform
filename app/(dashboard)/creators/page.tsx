@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, SlidersHorizontal, Users, Mail, Sparkles, X, Globe, Zap, ChevronDown, ChevronUp, Star, TrendingUp } from "lucide-react";
+import { Search, SlidersHorizontal, Users, Mail, Sparkles, X, Globe, Zap, ChevronDown, ChevronUp, Star, TrendingUp, MessageSquare } from "lucide-react";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import InviteModal from "@/components/ui/InviteModal";
@@ -82,6 +83,7 @@ function BreakdownBar({ label, value }: { label: string; value: number }) {
 }
 
 export default function CreatorsPage() {
+  const router = useRouter();
   const [creators, setCreators] = useState<CreatorProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -587,13 +589,19 @@ export default function CreatorsPage() {
                     </p>
                   )}
 
-                  <Button variant="primary" size="md" fullWidth onClick={() => {
-                    const c = selected.creator;
-                    setSelected(null);
-                    setInviting({ id: c.id, name: c.full_name ?? c.email, avatar: initials(c.full_name, c.email), niche: c.category ?? "Creator", email: c.email });
-                  }}>
-                    Invite
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="secondary" size="md" className="flex-1"
+                      onClick={() => { setSelected(null); router.push(`/messages?with=${selected.creator.id}`); }}>
+                      <MessageSquare size={14} /> Message
+                    </Button>
+                    <Button variant="primary" size="md" className="flex-1" onClick={() => {
+                      const c = selected.creator;
+                      setSelected(null);
+                      setInviting({ id: c.id, name: c.full_name ?? c.email, avatar: initials(c.full_name, c.email), niche: c.category ?? "Creator", email: c.email });
+                    }}>
+                      Invite
+                    </Button>
+                  </div>
                 </div>
               </div>
             </motion.div>
