@@ -48,8 +48,13 @@ export default function FindCreatorsPage() {
       .select("id, full_name, bio, category, followers, engagement_rate, rating, tags")
       .eq("role", "creator")
       .order("followers", { ascending: false })
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) console.error("find-creators:", error.message);
         setCreators(data ?? []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("find-creators fetch failed:", err);
         setLoading(false);
       });
   }, []);
