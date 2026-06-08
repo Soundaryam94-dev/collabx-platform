@@ -17,6 +17,11 @@ type Creator = {
   engagement_rate: number | null;
   rating: number | null;
   tags: string | null;
+  persona_audience_age: string | null;
+  persona_audience_gender: string | null;
+  persona_platforms: string | null;
+  persona_content_formats: string | null;
+  persona_collab_rate: string | null;
 };
 
 const NICHES = ["All", "Fashion", "Tech", "Food", "Travel", "Fitness", "Beauty", "Gaming", "Finance", "Music", "Lifestyle", "Education", "Comedy", "Sports", "Photography", "Parenting", "Pets", "Automotive", "Health", "Art", "Business"];
@@ -47,7 +52,7 @@ export default function FindCreatorsPage() {
       try {
         const { data, error } = await supabase
           .from("profiles")
-          .select("id, full_name, bio, category, followers, engagement_rate, rating, tags")
+          .select("id, full_name, bio, category, followers, engagement_rate, rating, tags, persona_audience_age, persona_audience_gender, persona_platforms, persona_content_formats, persona_collab_rate")
           .eq("role", "creator")
           .order("followers", { ascending: false });
         if (error) console.error("find-creators:", error.message);
@@ -180,6 +185,25 @@ export default function FindCreatorsPage() {
                             <span key={tag} className="text-xs px-2 py-0.5 rounded-full bg-[#7C5CFF]/10 text-[#A855F7] border border-[#7C5CFF]/20">
                               {tag.trim()}
                             </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Persona */}
+                      {(creator.persona_audience_age || creator.persona_collab_rate || creator.persona_content_formats) && (
+                        <div className="flex flex-wrap gap-1">
+                          {creator.persona_audience_age && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-[#A1A1AA] border border-white/8">
+                              {creator.persona_audience_age} {creator.persona_audience_gender ? `· ${creator.persona_audience_gender}` : ""}
+                            </span>
+                          )}
+                          {creator.persona_collab_rate && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              {creator.persona_collab_rate}
+                            </span>
+                          )}
+                          {creator.persona_content_formats && creator.persona_content_formats.split(",").slice(0, 2).map(f => (
+                            <span key={f} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-[#A1A1AA] border border-white/8">{f.trim()}</span>
                           ))}
                         </div>
                       )}

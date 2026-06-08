@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Shield, Link2, Save, CheckCircle, Building2, MapPin, Phone, ChevronDown, Check, Camera } from "lucide-react";
+import { User, Shield, Link2, Save, CheckCircle, Building2, MapPin, Phone, ChevronDown, Check, Camera, Target, Globe, Users, Sparkles } from "lucide-react";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
@@ -11,6 +11,7 @@ import { getProfile, updateProfile } from "@/lib/supabase/queries";
 
 const TABS = [
   { id: "profile", label: "Profile", icon: User },
+  { id: "persona", label: "Persona", icon: Target },
   { id: "security", label: "Security", icon: Shield },
 ];
 
@@ -18,6 +19,17 @@ const TABS = [
 
 const ALL_CATEGORIES = ["Fashion", "Tech", "Food", "Travel", "Fitness", "Beauty", "Gaming", "Finance", "Music", "Lifestyle", "Education", "Comedy", "Sports", "Photography", "Parenting", "Pets", "Automotive", "Health", "Art", "Business"];
 const ALL_INDUSTRIES = ["Fashion & Apparel", "Beauty & Cosmetics", "Food & Beverage", "Technology", "Health & Fitness", "Travel & Hospitality", "Finance", "Education", "Entertainment", "Retail", "Automotive", "Real Estate"];
+
+const AGE_OPTIONS = ["13-17", "18-24", "25-34", "35-44", "45+"];
+const GENDER_OPTIONS_BRAND = ["Male", "Female", "Both"];
+const GENDER_OPTIONS_CREATOR = ["Male", "Female", "Mixed"];
+const BRAND_VOICE_OPTIONS = ["Professional", "Playful", "Inspirational", "Educational", "Bold"];
+const PLATFORM_OPTIONS = ["Instagram", "YouTube", "TikTok", "Twitter", "LinkedIn"];
+const GOAL_OPTIONS = ["Brand Awareness", "Sales", "Engagement", "Community Growth"];
+const BUDGET_OPTIONS = ["₹5K-₹20K", "₹20K-₹50K", "₹50K-₹1L", "₹1L+"];
+const FORMAT_OPTIONS = ["Reels", "Stories", "Posts", "Reviews", "Tutorials", "Vlogs"];
+const RATE_OPTIONS = ["₹1K-₹5K", "₹5K-₹15K", "₹15K-₹50K", "₹50K+"];
+const LANGUAGE_OPTIONS = ["English", "Hindi", "Tamil", "Telugu", "Kannada", "Malayalam", "Bengali", "Marathi"];
 
 function CustomSelect({ label, icon: Icon, value, onChange, options, placeholder }: {
   label: string;
@@ -106,6 +118,13 @@ export default function SettingsPage() {
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [persona, setPersona] = useState({
+    audience_age: "", audience_gender: "", brand_voice: "",
+    platforms: [] as string[], campaign_goals: [] as string[], budget_range: "",
+    content_formats: [] as string[], collab_rate: "", languages: [] as string[],
+  });
+  const [personaSaving, setPersonaSaving] = useState(false);
+  const [personaSaved, setPersonaSaved] = useState(false);
   const [passwords, setPasswords] = useState({ current: "", newPwd: "", confirm: "" });
   const [pwSaving, setPwSaving] = useState(false);
   const [pwError, setPwError] = useState("");
@@ -136,6 +155,18 @@ export default function SettingsPage() {
           instagram: (data as { instagram?: string }).instagram ?? "",
           youtube: (data as { youtube?: string }).youtube ?? "",
           linkedin: (data as { linkedin?: string }).linkedin ?? "",
+        });
+        const d = data as Record<string, string | null>;
+        setPersona({
+          audience_age: d.persona_audience_age ?? "",
+          audience_gender: d.persona_audience_gender ?? "",
+          brand_voice: d.persona_brand_voice ?? "",
+          platforms: (d.persona_platforms ?? "").split(",").filter(Boolean),
+          campaign_goals: (d.persona_campaign_goals ?? "").split(",").filter(Boolean),
+          budget_range: d.persona_budget_range ?? "",
+          content_formats: (d.persona_content_formats ?? "").split(",").filter(Boolean),
+          collab_rate: d.persona_collab_rate ?? "",
+          languages: (d.persona_languages ?? "").split(",").filter(Boolean),
         });
       }
     });
@@ -174,6 +205,32 @@ export default function SettingsPage() {
     }
   };
 
+
+  const handlePersonaSave = async () => {
+    if (!userId) return;
+    setPersonaSaving(true);
+    try {
+      await updateProfile(userId, {
+        persona_audience_age: persona.audience_age || undefined,
+        persona_audience_gender: persona.audience_gender || undefined,
+        persona_platforms: persona.platforms.join(",") || undefined,
+        ...(role === "brand" && {
+          persona_brand_voice: persona.brand_voice || undefined,
+          persona_campaign_goals: persona.campaign_goals.join(",") || undefined,
+          persona_budget_range: persona.budget_range || undefined,
+        }),
+        ...(role === "creator" && {
+          persona_content_formats: persona.content_formats.join(",") || undefined,
+          persona_collab_rate: persona.collab_rate || undefined,
+          persona_languages: persona.languages.join(",") || undefined,
+        }),
+      });
+      setPersonaSaved(true);
+      setTimeout(() => setPersonaSaved(false), 3000);
+    } finally {
+      setPersonaSaving(false);
+    }
+  };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -502,6 +559,172 @@ export default function SettingsPage() {
                       exit={{ opacity: 0 }}
                       className="flex items-center gap-1.5 text-emerald-400 text-sm font-medium"
                     >
+                      <CheckCircle size={14} /> Saved!
+                    </motion.span>
+                  )}
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {tab === "persona" && (
+            <Card hover={false}>
+              <h3 className="font-bold text-white mb-1">
+                {role === "brand" ? "Brand Persona" : "Creator Persona"}
+              </h3>
+              <p className="text-[#A1A1AA] text-xs mb-6">
+                {role === "brand"
+                  ? "Define your audience and campaign preferences — helps creators identify the best fit."
+                  : "Describe your audience and content style — helps brands find the perfect match."}
+              </p>
+
+              <div className="space-y-6">
+                {/* Audience */}
+                <div className="space-y-4">
+                  <p className="text-sm font-bold text-white flex items-center gap-2">
+                    <Users size={14} className="text-[#A855F7]" /> Target Audience
+                  </p>
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-[#A1A1AA]">Audience Age Range</label>
+                    <div className="flex flex-wrap gap-2">
+                      {AGE_OPTIONS.map((age) => (
+                        <button key={age} type="button"
+                          onClick={() => setPersona(p => ({ ...p, audience_age: p.audience_age === age ? "" : age }))}
+                          className={`text-xs px-3 py-1.5 rounded-full border transition-all cursor-pointer ${persona.audience_age === age ? "bg-[#7C5CFF]/30 border-[#7C5CFF] text-white" : "border-white/10 text-[#A1A1AA] hover:border-white/30 hover:text-white"}`}
+                        >{age}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-[#A1A1AA]">Audience Gender</label>
+                    <div className="flex flex-wrap gap-2">
+                      {(role === "brand" ? GENDER_OPTIONS_BRAND : GENDER_OPTIONS_CREATOR).map((g) => (
+                        <button key={g} type="button"
+                          onClick={() => setPersona(p => ({ ...p, audience_gender: p.audience_gender === g ? "" : g }))}
+                          className={`text-xs px-3 py-1.5 rounded-full border transition-all cursor-pointer ${persona.audience_gender === g ? "bg-[#7C5CFF]/30 border-[#7C5CFF] text-white" : "border-white/10 text-[#A1A1AA] hover:border-white/30 hover:text-white"}`}
+                        >{g}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Brand Identity */}
+                {role === "brand" && (
+                  <div className="space-y-4 pt-4 border-t border-white/10">
+                    <p className="text-sm font-bold text-white flex items-center gap-2">
+                      <Sparkles size={14} className="text-[#A855F7]" /> Brand Identity
+                    </p>
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-[#A1A1AA]">Brand Voice</label>
+                      <div className="flex flex-wrap gap-2">
+                        {BRAND_VOICE_OPTIONS.map((v) => (
+                          <button key={v} type="button"
+                            onClick={() => setPersona(p => ({ ...p, brand_voice: p.brand_voice === v ? "" : v }))}
+                            className={`text-xs px-3 py-1.5 rounded-full border transition-all cursor-pointer ${persona.brand_voice === v ? "bg-[#7C5CFF]/30 border-[#7C5CFF] text-white" : "border-white/10 text-[#A1A1AA] hover:border-white/30 hover:text-white"}`}
+                          >{v}</button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Platforms & Campaign / Content */}
+                <div className="space-y-4 pt-4 border-t border-white/10">
+                  <p className="text-sm font-bold text-white flex items-center gap-2">
+                    <Globe size={14} className="text-[#A855F7]" /> {role === "brand" ? "Platform & Campaign" : "Content"}
+                  </p>
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-[#A1A1AA]">Preferred Platforms <span className="text-[10px] text-[#A1A1AA]/60">(select all that apply)</span></label>
+                    <div className="flex flex-wrap gap-2">
+                      {PLATFORM_OPTIONS.map((p) => (
+                        <button key={p} type="button"
+                          onClick={() => setPersona(prev => ({ ...prev, platforms: prev.platforms.includes(p) ? prev.platforms.filter(x => x !== p) : [...prev.platforms, p] }))}
+                          className={`text-xs px-3 py-1.5 rounded-full border transition-all cursor-pointer ${persona.platforms.includes(p) ? "bg-[#7C5CFF]/30 border-[#7C5CFF] text-white" : "border-white/10 text-[#A1A1AA] hover:border-white/30 hover:text-white"}`}
+                        >{p}</button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {role === "brand" && (
+                    <>
+                      <div className="space-y-2">
+                        <label className="text-xs font-medium text-[#A1A1AA]">Campaign Goals <span className="text-[10px] text-[#A1A1AA]/60">(select all that apply)</span></label>
+                        <div className="flex flex-wrap gap-2">
+                          {GOAL_OPTIONS.map((g) => (
+                            <button key={g} type="button"
+                              onClick={() => setPersona(prev => ({ ...prev, campaign_goals: prev.campaign_goals.includes(g) ? prev.campaign_goals.filter(x => x !== g) : [...prev.campaign_goals, g] }))}
+                              className={`text-xs px-3 py-1.5 rounded-full border transition-all cursor-pointer ${persona.campaign_goals.includes(g) ? "bg-[#7C5CFF]/30 border-[#7C5CFF] text-white" : "border-white/10 text-[#A1A1AA] hover:border-white/30 hover:text-white"}`}
+                            >{g}</button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-xs font-medium text-[#A1A1AA]">Campaign Budget Range</label>
+                        <div className="flex flex-wrap gap-2">
+                          {BUDGET_OPTIONS.map((b) => (
+                            <button key={b} type="button"
+                              onClick={() => setPersona(p => ({ ...p, budget_range: p.budget_range === b ? "" : b }))}
+                              className={`text-xs px-3 py-1.5 rounded-full border transition-all cursor-pointer ${persona.budget_range === b ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-400" : "border-white/10 text-[#A1A1AA] hover:border-white/30 hover:text-white"}`}
+                            >{b}</button>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {role === "creator" && (
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-[#A1A1AA]">Content Formats <span className="text-[10px] text-[#A1A1AA]/60">(select all that apply)</span></label>
+                      <div className="flex flex-wrap gap-2">
+                        {FORMAT_OPTIONS.map((f) => (
+                          <button key={f} type="button"
+                            onClick={() => setPersona(prev => ({ ...prev, content_formats: prev.content_formats.includes(f) ? prev.content_formats.filter(x => x !== f) : [...prev.content_formats, f] }))}
+                            className={`text-xs px-3 py-1.5 rounded-full border transition-all cursor-pointer ${persona.content_formats.includes(f) ? "bg-[#7C5CFF]/30 border-[#7C5CFF] text-white" : "border-white/10 text-[#A1A1AA] hover:border-white/30 hover:text-white"}`}
+                          >{f}</button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Creator Collaboration */}
+                {role === "creator" && (
+                  <div className="space-y-4 pt-4 border-t border-white/10">
+                    <p className="text-sm font-bold text-white flex items-center gap-2">
+                      <Target size={14} className="text-[#A855F7]" /> Collaboration
+                    </p>
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-[#A1A1AA]">Rate per Post / Collaboration</label>
+                      <div className="flex flex-wrap gap-2">
+                        {RATE_OPTIONS.map((r) => (
+                          <button key={r} type="button"
+                            onClick={() => setPersona(p => ({ ...p, collab_rate: p.collab_rate === r ? "" : r }))}
+                            className={`text-xs px-3 py-1.5 rounded-full border transition-all cursor-pointer ${persona.collab_rate === r ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-400" : "border-white/10 text-[#A1A1AA] hover:border-white/30 hover:text-white"}`}
+                          >{r}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-[#A1A1AA]">Content Languages <span className="text-[10px] text-[#A1A1AA]/60">(select all that apply)</span></label>
+                      <div className="flex flex-wrap gap-2">
+                        {LANGUAGE_OPTIONS.map((l) => (
+                          <button key={l} type="button"
+                            onClick={() => setPersona(prev => ({ ...prev, languages: prev.languages.includes(l) ? prev.languages.filter(x => x !== l) : [...prev.languages, l] }))}
+                            className={`text-xs px-3 py-1.5 rounded-full border transition-all cursor-pointer ${persona.languages.includes(l) ? "bg-[#7C5CFF]/30 border-[#7C5CFF] text-white" : "border-white/10 text-[#A1A1AA] hover:border-white/30 hover:text-white"}`}
+                          >{l}</button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3 pt-4 border-t border-white/10">
+                  <Button variant="primary" size="md" onClick={handlePersonaSave} disabled={personaSaving}>
+                    <Save size={14} /> {personaSaving ? "Saving…" : "Save Persona"}
+                  </Button>
+                  {personaSaved && (
+                    <motion.span initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
+                      className="flex items-center gap-1.5 text-emerald-400 text-sm font-medium">
                       <CheckCircle size={14} /> Saved!
                     </motion.span>
                   )}

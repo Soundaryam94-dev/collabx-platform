@@ -17,6 +17,12 @@ type BrandProfile = {
   bio: string | null;
   avatar_url: string | null;
   website: string | null;
+  persona_audience_age: string | null;
+  persona_audience_gender: string | null;
+  persona_brand_voice: string | null;
+  persona_platforms: string | null;
+  persona_campaign_goals: string | null;
+  persona_budget_range: string | null;
 };
 
 const gradients = [
@@ -334,6 +340,51 @@ export default function BrandsPage() {
                         </p>
                       )}
                     </div>
+                    {/* Brand Persona */}
+                    {(selected.brand.persona_audience_age || selected.brand.persona_platforms || selected.brand.persona_brand_voice || selected.brand.persona_campaign_goals || selected.brand.persona_budget_range) && (
+                      <div className="rounded-xl p-4 border border-white/8" style={{ background: "rgba(255,255,255,0.04)" }}>
+                        <p className="text-[#A1A1AA] text-[11px] font-semibold uppercase tracking-widest mb-3">Brand Persona</p>
+                        <div className="space-y-2">
+                          {selected.brand.persona_audience_age && (
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className="text-[10px] text-[#A1A1AA] w-16 shrink-0">Audience</span>
+                              {[selected.brand.persona_audience_age, selected.brand.persona_audience_gender].filter(Boolean).map(v => (
+                                <span key={v} className="text-[10px] px-2 py-0.5 rounded-full bg-[#7C5CFF]/10 border border-[#7C5CFF]/20 text-[#A855F7]">{v}</span>
+                              ))}
+                            </div>
+                          )}
+                          {selected.brand.persona_brand_voice && (
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className="text-[10px] text-[#A1A1AA] w-16 shrink-0">Voice</span>
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#7C5CFF]/10 border border-[#7C5CFF]/20 text-[#A855F7]">{selected.brand.persona_brand_voice}</span>
+                            </div>
+                          )}
+                          {selected.brand.persona_platforms && (
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className="text-[10px] text-[#A1A1AA] w-16 shrink-0">Platforms</span>
+                              {selected.brand.persona_platforms.split(",").map(p => (
+                                <span key={p} className="text-[10px] px-2 py-0.5 rounded-full bg-[#7C5CFF]/10 border border-[#7C5CFF]/20 text-[#A855F7]">{p}</span>
+                              ))}
+                            </div>
+                          )}
+                          {selected.brand.persona_campaign_goals && (
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className="text-[10px] text-[#A1A1AA] w-16 shrink-0">Goals</span>
+                              {selected.brand.persona_campaign_goals.split(",").map(g => (
+                                <span key={g} className="text-[10px] px-2 py-0.5 rounded-full bg-[#7C5CFF]/10 border border-[#7C5CFF]/20 text-[#A855F7]">{g}</span>
+                              ))}
+                            </div>
+                          )}
+                          {selected.brand.persona_budget_range && (
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <span className="text-[10px] text-[#A1A1AA] w-16 shrink-0">Budget</span>
+                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">{selected.brand.persona_budget_range}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     {currentUserId !== selected.brand.id && (
                       <Button variant="primary" size="md" fullWidth
                         onClick={() => {

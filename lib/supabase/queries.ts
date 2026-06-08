@@ -116,7 +116,7 @@ export async function getCreatorProfiles() {
   const supabase = createClient();
   const { data } = await supabase
     .from("profiles")
-    .select("id, full_name, email, bio, avatar_url, category, followers, engagement_rate, rating, tags")
+    .select("id, full_name, email, bio, avatar_url, category, followers, engagement_rate, rating, tags, persona_audience_age, persona_audience_gender, persona_platforms, persona_content_formats, persona_collab_rate, persona_languages")
     .eq("role", "creator")
     .order("full_name");
   return data ?? [];
@@ -126,7 +126,7 @@ export async function getBrandProfiles() {
   const supabase = createClient();
   const { data } = await supabase
     .from("profiles")
-    .select("id, full_name, email, bio, avatar_url, website")
+    .select("id, full_name, email, bio, avatar_url, website, persona_audience_age, persona_audience_gender, persona_brand_voice, persona_platforms, persona_campaign_goals, persona_budget_range")
     .eq("role", "brand")
     .order("full_name");
   return data ?? [];
@@ -165,7 +165,7 @@ export async function getProfile(userId: string) {
   const supabase = createClient();
   const { data } = await supabase
     .from("profiles")
-    .select("id, full_name, email, role, bio, website, category, followers, engagement_rate, rating, tags, industry, location, phone, instagram, youtube, linkedin")
+    .select("id, full_name, email, role, bio, website, category, followers, engagement_rate, rating, tags, industry, location, phone, instagram, youtube, linkedin, persona_audience_age, persona_audience_gender, persona_brand_voice, persona_platforms, persona_campaign_goals, persona_budget_range, persona_content_formats, persona_collab_rate, persona_languages")
     .eq("id", userId)
     .single();
   return data;
@@ -186,6 +186,15 @@ export async function updateProfile(userId: string, payload: {
   instagram?: string;
   youtube?: string;
   linkedin?: string;
+  persona_audience_age?: string;
+  persona_audience_gender?: string;
+  persona_brand_voice?: string;
+  persona_platforms?: string;
+  persona_campaign_goals?: string;
+  persona_budget_range?: string;
+  persona_content_formats?: string;
+  persona_collab_rate?: string;
+  persona_languages?: string;
 }) {
   const supabase = createClient();
   const { error } = await supabase

@@ -21,6 +21,12 @@ type CreatorProfile = {
   engagement_rate: number;
   rating: number;
   tags: string;
+  persona_audience_age: string | null;
+  persona_audience_gender: string | null;
+  persona_platforms: string | null;
+  persona_content_formats: string | null;
+  persona_collab_rate: string | null;
+  persona_languages: string | null;
 };
 
 type MatchResult = CreatorProfile & {
@@ -524,6 +530,53 @@ export default function CreatorsPage() {
                       {selected.creator.tags.split(",").map((t) => (
                         <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-[#7C5CFF]/15 text-[#A855F7] border border-[#7C5CFF]/20">#{t.trim()}</span>
                       ))}
+                    </div>
+                  )}
+
+                  {/* Creator Persona */}
+                  {(selected.creator.persona_audience_age || selected.creator.persona_platforms || selected.creator.persona_content_formats || selected.creator.persona_collab_rate) && (
+                    <div className="rounded-xl p-4 border border-white/8" style={{ background: "rgba(255,255,255,0.04)" }}>
+                      <p className="text-[#A1A1AA] text-[11px] font-semibold uppercase tracking-widest mb-3">Creator Persona</p>
+                      <div className="space-y-2">
+                        {selected.creator.persona_audience_age && (
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-[10px] text-[#A1A1AA] w-16 shrink-0">Audience</span>
+                            {[selected.creator.persona_audience_age, selected.creator.persona_audience_gender].filter(Boolean).map(v => (
+                              <span key={v} className="text-[10px] px-2 py-0.5 rounded-full bg-[#7C5CFF]/10 border border-[#7C5CFF]/20 text-[#A855F7]">{v}</span>
+                            ))}
+                          </div>
+                        )}
+                        {selected.creator.persona_platforms && (
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-[10px] text-[#A1A1AA] w-16 shrink-0">Platforms</span>
+                            {selected.creator.persona_platforms.split(",").map(p => (
+                              <span key={p} className="text-[10px] px-2 py-0.5 rounded-full bg-[#7C5CFF]/10 border border-[#7C5CFF]/20 text-[#A855F7]">{p}</span>
+                            ))}
+                          </div>
+                        )}
+                        {selected.creator.persona_content_formats && (
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-[10px] text-[#A1A1AA] w-16 shrink-0">Formats</span>
+                            {selected.creator.persona_content_formats.split(",").map(f => (
+                              <span key={f} className="text-[10px] px-2 py-0.5 rounded-full bg-[#7C5CFF]/10 border border-[#7C5CFF]/20 text-[#A855F7]">{f}</span>
+                            ))}
+                          </div>
+                        )}
+                        {selected.creator.persona_collab_rate && (
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-[10px] text-[#A1A1AA] w-16 shrink-0">Rate</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">{selected.creator.persona_collab_rate}</span>
+                          </div>
+                        )}
+                        {selected.creator.persona_languages && (
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="text-[10px] text-[#A1A1AA] w-16 shrink-0">Languages</span>
+                            {selected.creator.persona_languages.split(",").map(l => (
+                              <span key={l} className="text-[10px] px-2 py-0.5 rounded-full bg-[#7C5CFF]/10 border border-[#7C5CFF]/20 text-[#A855F7]">{l}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
 
