@@ -145,16 +145,6 @@ export default function SignupPage() {
               {isPending ? "Creating account..." : "Create Account"}
             </Button>
 
-            <p className="text-xs text-[#A1A1AA] text-center">
-              By signing up you agree to our{" "}
-              <Link href="/terms" className="text-[#7C5CFF] hover:underline">
-                Terms
-              </Link>{" "}
-              &{" "}
-              <Link href="/privacy" className="text-[#7C5CFF] hover:underline">
-                Privacy Policy
-              </Link>
-            </p>
           </form>
 
           <div className="mt-5 text-center">

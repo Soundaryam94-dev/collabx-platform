@@ -592,7 +592,7 @@ export default function CreatorsPage() {
                     setSelected(null);
                     setInviting({ id: c.id, name: c.full_name ?? c.email, avatar: initials(c.full_name, c.email), niche: c.category ?? "Creator", email: c.email });
                   }}>
-                    Invite to Collaborate
+                    Invite
                   </Button>
                 </div>
               </div>

@@ -156,7 +156,7 @@ function BrandDashboard({ userId }: { userId: string }) {
     { label: "Create Account", description: "You're signed up and ready to go.", done: true, href: "/settings" },
     { label: "Create a Campaign", description: "Set up your first campaign with goals and details.", done: stats.totalCampaigns > 0, href: "/campaigns/new" },
     { label: "Invite a Creator", description: "Browse creators and send your first collaboration invite.", done: stats.totalCreators > 0, href: "/creators" },
-    { label: "Start Collaborating", description: "A creator accepted your invite — you're live!", done: stats.activeCampaigns > 0, href: "/collaborations" },
+    { label: "Start Collaborating", description: "Track progress once a creator accepts your invite.", done: stats.activeCampaigns > 0, href: "/collaborations" },
   ];
 
   const statCards = [
@@ -249,7 +249,7 @@ function CreatorDashboard({ userId }: { userId: string }) {
     { label: "Create Account", description: "You're signed up and ready to go.", done: true, href: "/settings" },
     { label: "Complete Profile", description: "Add your bio, niche, and follower count so brands can find you.", done: hasBio, href: "/settings" },
     { label: "Send a Proposal", description: "Browse brands and send your first collaboration proposal.", done: stats.totalCollabs > 0, href: "/brands" },
-    { label: "Start Collaborating", description: "A brand accepted your proposal — you're live!", done: stats.activeCollabs > 0, href: "/collaborations" },
+    { label: "Start Collaborating", description: "Track your deal once a brand accepts your proposal.", done: stats.activeCollabs > 0, href: "/collaborations" },
   ];
 
   const statCards = [

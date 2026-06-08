@@ -527,16 +527,8 @@ export default function SettingsPage() {
                       />
                     </div>
 
-                    <Input
-                      type="number"
-                      label="Rating (out of 5)"
-                      placeholder="e.g. 4.8"
-                      value={profile.rating}
-                      onChange={(e) => setProfile((p) => ({ ...p, rating: e.target.value }))}
-                    />
-
                     <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-[#A1A1AA]">Tags <span className="text-[11px]">(comma separated)</span></label>
+                      <label className="text-sm font-medium text-[#A1A1AA]">Keywords <span className="text-[11px]">(comma separated, e.g. fashion, luxury, reviews)</span></label>
                       <input
                         type="text"
                         placeholder="e.g. fashion, luxury, reviews, tutorials"

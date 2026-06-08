@@ -79,15 +79,6 @@ export default function LoginPage() {
               </motion.p>
             )}
 
-            <div className="flex justify-end">
-              <Link
-                href="/forgot-password"
-                className="text-xs text-[#7C5CFF] hover:text-[#A855F7] transition-colors"
-              >
-                Forgot password?
-              </Link>
-            </div>
-
             <Button
               type="submit"
               variant="primary"

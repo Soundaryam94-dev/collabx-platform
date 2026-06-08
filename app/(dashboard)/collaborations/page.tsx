@@ -21,6 +21,16 @@ type Collab = {
 
 const PIPELINE = ["invited", "agreed", "in_progress", "submitted", "approved", "completed"];
 
+const STATUS_LABEL: Record<string, string> = {
+  invited: "Invited",
+  agreed: "Agreed",
+  in_progress: "In Progress",
+  submitted: "Content Submitted",
+  approved: "Approved",
+  completed: "Completed",
+  rejected: "Declined",
+};
+
 const statusVariant: Record<string, "green" | "purple" | "blue" | "gray" | "orange"> = {
   invited: "gray", agreed: "purple", in_progress: "blue",
   submitted: "orange", approved: "green", completed: "green", rejected: "gray",
@@ -91,7 +101,7 @@ export default function CollaborationsPage() {
                 ? "bg-[#7C5CFF]/20 border-[#7C5CFF]/50 text-white"
                 : "border-white/10 text-[#A1A1AA] hover:border-white/20"
             }`}>
-            {s.replace("_", " ")}
+            {STATUS_LABEL[s] ?? s}
             {s !== "all" && (
               <span className="ml-1.5 text-[10px] bg-white/10 px-1.5 py-0.5 rounded-full">
                 {collabs.filter((c) => c.status === s).length}
@@ -104,7 +114,7 @@ export default function CollaborationsPage() {
       {filtered.length === 0 ? (
         <Card hover={false}>
           <div className="text-center py-12 text-[#A1A1AA] text-sm">
-            {activeStatus === "all" ? "No collaborations yet." : `No collaborations with status "${activeStatus.replace("_", " ")}".`}
+            {activeStatus === "all" ? "No collaborations yet. Invite a creator or send a proposal to get started." : `No collaborations at "${STATUS_LABEL[activeStatus] ?? activeStatus}" stage.`}
           </div>
         </Card>
       ) : (
@@ -127,7 +137,7 @@ export default function CollaborationsPage() {
                       </p>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
-                      <Badge variant={statusVariant[c.status] ?? "gray"}>{c.status.replace("_", " ")}</Badge>
+                      <Badge variant={statusVariant[c.status] ?? "gray"}>{STATUS_LABEL[c.status] ?? c.status}</Badge>
                       <ChevronRight size={16} className="text-[#A1A1AA]" />
                     </div>
                   </div>
@@ -167,7 +177,7 @@ export default function CollaborationsPage() {
                     {selected.campaigns?.[0]?.title ?? "Direct Collaboration"}
                   </h3>
                   <div className="mt-2 flex justify-center">
-                    <Badge variant={statusVariant[selected.status] ?? "gray"}>{selected.status.replace("_", " ")}</Badge>
+                    <Badge variant={statusVariant[selected.status] ?? "gray"}>{STATUS_LABEL[selected.status] ?? selected.status}</Badge>
                   </div>
                 </div>
 
@@ -206,8 +216,8 @@ export default function CollaborationsPage() {
                     </div>
                     <div className="flex justify-between px-0.5">
                       {PIPELINE.map((s) => (
-                        <span key={s} className={`text-[8px] capitalize ${selected.status === s ? "text-[#A855F7] font-semibold" : "text-white/30"}`}>
-                          {s.replace("_", " ")}
+                        <span key={s} className={`text-[8px] ${selected.status === s ? "text-[#A855F7] font-semibold" : "text-white/30"}`}>
+                          {STATUS_LABEL[s] ?? s}
                         </span>
                       ))}
                     </div>
@@ -216,7 +226,7 @@ export default function CollaborationsPage() {
                   {nextStatus(selected.status) && selected.status !== "completed" && selected.status !== "rejected" && (
                     <Button variant="primary" size="md" fullWidth disabled={updating}
                       onClick={() => updateStatus(selected.id, nextStatus(selected.status)!)}>
-                      {updating ? "Updating…" : `Mark as ${nextStatus(selected.status)!.replace("_", " ")}`}
+                      {updating ? "Updating…" : `Move to: ${STATUS_LABEL[nextStatus(selected.status)!] ?? nextStatus(selected.status)}`}
                     </Button>
                   )}
 

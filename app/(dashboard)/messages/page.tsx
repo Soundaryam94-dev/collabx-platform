@@ -172,7 +172,7 @@ export default function MessagesPage() {
           {filtered.length === 0 ? (
             <div className="p-4 text-center text-[#A1A1AA] text-xs mt-8">
               <MessageSquare size={32} className="mx-auto mb-2 opacity-30" />
-              No conversations yet.<br />Click + to start one.
+              No messages yet.<br />Click <span className="text-[#A855F7]">+</span> to start a conversation.
             </div>
           ) : (
             filtered.map((conv) => {
@@ -262,9 +262,10 @@ export default function MessagesPage() {
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex flex-col items-center justify-center text-[#A1A1AA]">
+        <div className="flex-1 flex flex-col items-center justify-center text-[#A1A1AA] px-8 text-center">
           <MessageSquare size={48} className="mb-4 opacity-20" />
-          <p className="text-sm">Select a conversation or start a new one</p>
+          <p className="text-white text-sm font-semibold mb-1">No conversation selected</p>
+          <p className="text-xs text-[#A1A1AA]">Pick a chat from the left, or click <span className="text-[#A855F7] font-semibold">+</span> to message someone from Find Brands or Find Creators.</p>
         </div>
       )}
 
@@ -282,7 +283,7 @@ export default function MessagesPage() {
                   <button onClick={() => setShowNew(false)} className="text-[#A1A1AA] hover:text-white cursor-pointer"><X size={18} /></button>
                 </div>
                 <input value={newEmail} onChange={(e) => { setNewEmail(e.target.value); setNewEmailError(null); }}
-                  placeholder="Enter user email…"
+                  placeholder="Enter the email of a brand or creator…"
                   onKeyDown={(e) => e.key === "Enter" && handleNewConversation()}
                   className="w-full glass rounded-xl px-4 py-3 text-sm text-white placeholder-[#A1A1AA] border border-white/10 focus:border-[#7C5CFF] focus:outline-none mb-3" />
                 {newEmailError && (

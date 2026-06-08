@@ -392,7 +392,7 @@ export default function BrandsPage() {
                           setSelected(null);
                           setProposing({ id: b.id, name: b.full_name ?? b.email, avatar: initials(b.full_name, b.email), niche: "Brand", email: b.email });
                         }}>
-                        <Briefcase size={14} /> Send Proposal
+                        <Briefcase size={14} /> Propose Collaboration
                       </Button>
                     )}
                   </div>
