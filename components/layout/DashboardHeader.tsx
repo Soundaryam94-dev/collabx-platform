@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogOut, Zap, LayoutDashboard, Megaphone, Users, MessageSquare, FileText, Settings } from "lucide-react";
+import { Menu, X, LogOut, Zap, LayoutDashboard, FileText } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -15,19 +15,12 @@ interface DashboardHeaderProps {
 
 const brandNav = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Campaigns", href: "/campaigns", icon: Megaphone },
-  { label: "Find Creators", href: "/creators", icon: Users },
   { label: "Collaborations", href: "/collaborations", icon: FileText },
-  { label: "Messages", href: "/messages", icon: MessageSquare },
-  { label: "Settings", href: "/settings", icon: Settings },
 ];
 
 const creatorNav = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Collaborations", href: "/collaborations", icon: FileText },
-  { label: "Find Brands", href: "/brands", icon: Megaphone },
-  { label: "Messages", href: "/messages", icon: MessageSquare },
-  { label: "Settings", href: "/settings", icon: Settings },
 ];
 
 export default function DashboardHeader({ title, role, userEmail, onLogout }: DashboardHeaderProps) {

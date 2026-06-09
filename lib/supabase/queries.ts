@@ -3,18 +3,18 @@ import { createClient } from "@/lib/supabase/client";
 export async function getBrandStats(userId: string) {
   const supabase = createClient();
 
-  const [campaignsRes, collaborationsRes] = await Promise.all([
-    supabase.from("campaigns").select("id, status").eq("brand_id", userId),
-    supabase.from("collaborations").select("creator_id").eq("brand_id", userId),
-  ]);
+  const { data: collaborations } = await supabase
+    .from("collaborations")
+    .select("creator_id, status")
+    .eq("brand_id", userId);
 
-  const campaigns = campaignsRes.data ?? [];
-  const collaborations = collaborationsRes.data ?? [];
+  const all = collaborations ?? [];
+  const activeStatuses = ["agreed", "in_progress", "submitted"];
+  const totalCreators = new Set(all.map((c) => c.creator_id)).size;
+  const activeCollabs = all.filter((c) => activeStatuses.includes(c.status)).length;
+  const completedCollabs = all.filter((c) => c.status === "completed").length;
 
-  const activeCampaigns = campaigns.filter((c) => c.status === "active").length;
-  const totalCreators = new Set(collaborations.map((c) => c.creator_id)).size;
-
-  return { activeCampaigns, totalCampaigns: campaigns.length, totalCreators };
+  return { totalCreators, activeCollabs, completedCollabs, totalCollabs: all.length };
 }
 
 export async function getCreatorStats(userId: string) {
@@ -35,29 +35,34 @@ export async function getCreatorStats(userId: string) {
   };
 }
 
-export async function getBrandCampaigns(userId: string) {
-  const supabase = createClient();
-  const { data } = await supabase
-    .from("campaigns")
-    .select("id, title, status, budget, created_at")
-    .eq("brand_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(10);
-  return data ?? [];
-}
-
 export async function getCollaborations(userId: string, role: "brand" | "creator") {
   const supabase = createClient();
   const field = role === "brand" ? "brand_id" : "creator_id";
-  const joinField = role === "brand" ? "creator_id" : "brand_id";
+  const counterField = role === "brand" ? "creator_id" : "brand_id";
 
-  const { data } = await supabase
+  const { data: collabs, error } = await supabase
     .from("collaborations")
-    .select(`id, status, deliverables, created_at, updated_at, campaigns(title), profiles!collaborations_${joinField}_fkey(full_name, email, role)`)
+    .select("id, status, deliverables, created_at, updated_at, brand_id, creator_id")
     .eq(field, userId)
     .order("updated_at", { ascending: false });
 
-  return data ?? [];
+  if (error) console.error("getCollaborations error:", error.message);
+
+  if (!collabs || collabs.length === 0) return [];
+
+  const counterIds = [...new Set(collabs.map((c) => c[counterField as "brand_id" | "creator_id"]).filter(Boolean))];
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, full_name, email, role")
+    .in("id", counterIds);
+
+  const profileMap = Object.fromEntries((profiles ?? []).map((p) => [p.id, p]));
+
+  return collabs.map((c) => ({
+    ...c,
+    content_url: null as string | null,
+    profiles: profileMap[c[counterField as "brand_id" | "creator_id"]] ?? null,
+  }));
 }
 
 export async function getConversations(userId: string) {
@@ -132,34 +137,6 @@ export async function getBrandProfiles() {
   return data ?? [];
 }
 
-export async function createCampaign(brandId: string, payload: {
-  title: string;
-  goal: string;
-  category: string;
-  budget: number | null;
-  start_date: string | null;
-  end_date: string | null;
-  guidelines: string;
-}) {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from("campaigns")
-    .insert({
-      brand_id: brandId,
-      title: payload.title,
-      goal: payload.goal || null,
-      category: payload.category || null,
-      budget: payload.budget,
-      start_date: payload.start_date || null,
-      end_date: payload.end_date || null,
-      guidelines: payload.guidelines || null,
-      status: "active",
-    })
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
 
 export async function getProfile(userId: string) {
   const supabase = createClient();

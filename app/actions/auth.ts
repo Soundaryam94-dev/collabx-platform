@@ -44,7 +44,9 @@ export async function signup(formData: FormData) {
   }
 
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  const creatorId = formData.get("creator_id") as string | null;
+  const brandId = formData.get("brand_id") as string | null;
+  redirect(creatorId ? `/creators?invite=${creatorId}` : brandId ? `/brands?propose=${brandId}` : "/dashboard");
 }
 
 export async function logout() {

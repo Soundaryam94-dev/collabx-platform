@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     .from("collaborations")
     .update({ status: newStatus, updated_at: new Date().toISOString() })
     .eq("id", collaborationId)
-    .select("*, campaigns(*), brand:profiles!collaborations_brand_id_fkey(id, email, full_name), creator:profiles!collaborations_creator_id_fkey(id, email, full_name)")
+    .select("*, brand:profiles!collaborations_brand_id_fkey(id, email, full_name), creator:profiles!collaborations_creator_id_fkey(id, email, full_name)")
     .single();
 
   if (error) {
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
           brandEmail: collab.brand?.email ?? "",
           brandName: collab.brand?.full_name ?? "Brand",
           creatorName: collab.creator?.full_name ?? "Creator",
-          campaignName: collab.campaigns?.title ?? "Campaign",
+          campaignName: collab.brand?.full_name ?? "Collaboration",
           deadline: collab.posting_timeline ?? "",
         });
       } else if (action === "decline" && collab) {
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
           brandEmail: collab.brand?.email ?? "",
           brandName: collab.brand?.full_name ?? "Brand",
           creatorName: collab.creator?.full_name ?? "Creator",
-          campaignName: collab.campaigns?.title ?? "Campaign",
+          campaignName: collab.brand?.full_name ?? "Collaboration",
         });
       }
     }
@@ -82,14 +82,14 @@ export async function POST(request: NextRequest) {
           creatorEmail: collab.creator?.email ?? "",
           creatorName: collab.creator?.full_name ?? "Creator",
           brandName: collab.brand?.full_name ?? "Brand",
-          campaignName: collab.campaigns?.title ?? "Campaign",
+          campaignName: collab.brand?.full_name ?? "Collaboration",
         });
       } else if (action === "decline" && collab) {
         await sendProposalDeclinedEmail({
           creatorEmail: collab.creator?.email ?? "",
           creatorName: collab.creator?.full_name ?? "Creator",
           brandName: collab.brand?.full_name ?? "Brand",
-          campaignName: collab.campaigns?.title ?? "Campaign",
+          campaignName: collab.brand?.full_name ?? "Collaboration",
         });
       }
     }

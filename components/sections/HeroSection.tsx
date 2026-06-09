@@ -7,9 +7,9 @@ import Button from "@/components/ui/Button";
 import CreatorNetwork from "@/components/sections/CreatorNetwork";
 
 const stats = [
-  { label: "Creators", value: "50K+", icon: Users },
-  { label: "Campaigns", value: "12K+", icon: TrendingUp },
-  { label: "Avg ROI", value: "340%", icon: Sparkles },
+  { label: "Creators", value: "500+", icon: Users },
+  { label: "Active Brands", value: "100+", icon: TrendingUp },
+  { label: "Collaborations", value: "1K+", icon: Sparkles },
 ];
 
 export default function HeroSection() {
@@ -57,8 +57,8 @@ export default function HeroSection() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-lg text-[#A1A1AA] leading-relaxed mb-8 max-w-lg"
             >
-              The all-in-one platform for influencer marketing. Discover
-              creators, launch campaigns, track performance, and grow your brand
+              The all-in-one platform for creator-brand partnerships. Discover
+              creators, send proposals, manage collaborations, and grow together
               — powered by AI.
             </motion.p>
 
@@ -83,7 +83,7 @@ export default function HeroSection() {
               <Button
                 variant="secondary"
                 size="lg"
-                onClick={() => router.push("/creators")}
+                onClick={() => router.push("/find-creators")}
               >
                 Browse Creators
               </Button>

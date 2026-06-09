@@ -82,6 +82,7 @@ create table public.collaborations (
   deliverables text,
   posting_timeline text,
   content_requirements text,
+  content_url text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );

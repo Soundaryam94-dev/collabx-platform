@@ -5,10 +5,6 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard,
-  Megaphone,
-  Users,
-  MessageSquare,
-  Settings,
   Zap,
   FileText,
   LogOut,
@@ -16,19 +12,12 @@ import {
 
 const brandNav = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Campaigns", href: "/campaigns", icon: Megaphone },
-  { label: "Find Creators", href: "/creators", icon: Users },
   { label: "Collaborations", href: "/collaborations", icon: FileText },
-  { label: "Messages", href: "/messages", icon: MessageSquare },
-  { label: "Settings", href: "/settings", icon: Settings },
 ];
 
 const creatorNav = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Collaborations", href: "/collaborations", icon: FileText },
-  { label: "Find Brands", href: "/brands", icon: Megaphone },
-  { label: "Messages", href: "/messages", icon: MessageSquare },
-  { label: "Settings", href: "/settings", icon: Settings },
 ];
 
 interface SidebarProps {

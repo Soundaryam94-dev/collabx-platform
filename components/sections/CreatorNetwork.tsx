@@ -132,7 +132,7 @@ export default function CreatorNetwork() {
         className="absolute top-8 left-0 glass rounded-xl px-3 py-2 border border-emerald-500/30"
       >
         <p className="text-[10px] text-emerald-400 font-semibold">● Live</p>
-        <p className="text-xs text-white font-bold">12 Campaigns</p>
+        <p className="text-xs text-white font-bold">12 Collabs</p>
       </motion.div>
     </div>
   );

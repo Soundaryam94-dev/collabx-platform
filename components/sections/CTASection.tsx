@@ -27,8 +27,8 @@ export default function CTASection() {
             <span className="gradient-text">grow together?</span>
           </h2>
           <p className="text-[#A1A1AA] text-lg mb-8 max-w-xl mx-auto relative">
-            Join thousands of brands and creators already using CollabX to run
-            successful influencer campaigns.
+            Join brands and creators already using CollabX to build
+            successful collaborations.
           </p>
           <div className="flex flex-wrap justify-center gap-4 relative">
             <Button

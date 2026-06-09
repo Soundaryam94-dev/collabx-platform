@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Megaphone, Users, BarChart2, ArrowUpRight, Clock, CheckCircle, Bell, X, ChevronRight } from "lucide-react";
+import { Users, BarChart2, ArrowUpRight, Clock, CheckCircle, Bell, X, ChevronRight } from "lucide-react";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { getBrandStats, getCreatorStats, getBrandCampaigns, getCollaborations } from "@/lib/supabase/queries";
+import { getBrandStats, getCreatorStats, getCollaborations } from "@/lib/supabase/queries";
 
 type Step = { label: string; description: string; done: boolean; href: string };
 
@@ -140,33 +140,33 @@ function StatCard({ label, value, change, icon: Icon, color }: {
 
 function BrandDashboard({ userId }: { userId: string }) {
   const router = useRouter();
-  const [stats, setStats] = useState({ activeCampaigns: 0, totalCreators: 0, totalCampaigns: 0 });
-  const [campaigns, setCampaigns] = useState<{ id: string; title: string; status: string; budget: number }[]>([]);
+  const [stats, setStats] = useState({ totalCreators: 0, activeCollabs: 0, completedCollabs: 0, totalCollabs: 0 });
+  const [collaborations, setCollaborations] = useState<{ id: string; status: string; profiles: unknown }[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([getBrandStats(userId), getBrandCampaigns(userId)]).then(([s, c]) => {
+    Promise.all([getBrandStats(userId), getCollaborations(userId, "brand")]).then(([s, c]) => {
       setStats(s);
-      setCampaigns(c as { id: string; title: string; status: string; budget: number }[]);
+      setCollaborations(c as typeof collaborations);
       setLoading(false);
     });
   }, [userId]);
 
   const brandSteps: Step[] = [
     { label: "Create Account", description: "You're signed up and ready to go.", done: true, href: "/settings" },
-    { label: "Create a Campaign", description: "Set up your first campaign with goals and details.", done: stats.totalCampaigns > 0, href: "/campaigns/new" },
-    { label: "Invite a Creator", description: "Browse creators and send your first collaboration invite.", done: stats.totalCreators > 0, href: "/creators" },
-    { label: "Start Collaborating", description: "Track progress once a creator accepts your invite.", done: stats.activeCampaigns > 0, href: "/collaborations" },
+    { label: "Complete Profile", description: "Add your brand info and persona so creators know who you are.", done: false, href: "/settings" },
+    { label: "Invite a Creator", description: "Browse creators and send your first collaboration invite.", done: stats.totalCreators > 0, href: "/find-creators" },
+    { label: "Start Collaborating", description: "Track progress once a creator accepts your invite.", done: stats.activeCollabs > 0, href: "/collaborations" },
   ];
 
   const statCards = [
-    { label: "Active Campaigns", value: String(stats.activeCampaigns), change: "Live now", icon: Megaphone, color: "#7C5CFF" },
-    { label: "Total Creators", value: String(stats.totalCreators), change: "Across campaigns", icon: Users, color: "#A855F7" },
-    { label: "Total Campaigns", value: String(stats.totalCampaigns), change: "All time", icon: BarChart2, color: "#8B5CF6" },
+    { label: "Total Creators", value: String(stats.totalCreators), change: "Invited", icon: Users, color: "#7C5CFF" },
+    { label: "Active Collabs", value: String(stats.activeCollabs), change: "In progress", icon: BarChart2, color: "#A855F7" },
+    { label: "Completed", value: String(stats.completedCollabs), change: "All time", icon: CheckCircle, color: "#8B5CF6" },
   ];
 
-  const statusVariant: Record<string, "green" | "gray" | "purple"> = {
-    active: "green", draft: "gray", paused: "purple", completed: "gray",
+  const statusVariant: Record<string, "green" | "purple" | "blue" | "gray" | "orange"> = {
+    invited: "gray", agreed: "purple", in_progress: "blue", submitted: "orange", approved: "green", completed: "green", rejected: "gray",
   };
 
   if (loading) return <div className="flex justify-center py-20"><div className="w-8 h-8 rounded-full border-2 border-[#7C5CFF] border-t-transparent animate-spin" /></div>;
@@ -175,7 +175,7 @@ function BrandDashboard({ userId }: { userId: string }) {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-extrabold text-white">Brand Dashboard</h2>
-        <p className="text-[#A1A1AA] text-sm mt-1">Overview of your campaigns and performance</p>
+        <p className="text-[#A1A1AA] text-sm mt-1">Overview of your collaborations and performance</p>
       </div>
 
       <GettingStarted steps={brandSteps} role="brand" />
@@ -191,27 +191,24 @@ function BrandDashboard({ userId }: { userId: string }) {
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
         <Card hover={false}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-white">My Campaigns</h3>
-            <Button variant="primary" size="sm" onClick={() => router.push("/campaigns/new")}>+ New Campaign</Button>
+            <h3 className="font-bold text-white">My Collaborations</h3>
           </div>
-          {campaigns.length === 0 ? (
-            <div className="text-center py-10 text-[#A1A1AA] text-sm">No campaigns yet. Create your first campaign to get started.</div>
+          {collaborations.length === 0 ? (
+            <div className="text-center py-10 text-[#A1A1AA] text-sm">No collaborations yet. Find a creator to get started.</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/10 text-[#A1A1AA]">
-                    <th className="text-left pb-3 font-medium">Campaign</th>
-                    <th className="text-left pb-3 font-medium">Budget</th>
+                    <th className="text-left pb-3 font-medium">Creator</th>
                     <th className="text-left pb-3 font-medium">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {campaigns.map((c) => (
-                    <tr key={c.id} className="hover:bg-white/5 transition-colors cursor-pointer" onClick={() => router.push("/campaigns")}>
-                      <td className="py-3 font-medium text-white">{c.title}</td>
-                      <td className="py-3 text-[#A1A1AA]">{c.budget ? `$${c.budget.toLocaleString()}` : "—"}</td>
-                      <td className="py-3"><Badge variant={statusVariant[c.status] ?? "gray"}>{c.status}</Badge></td>
+                  {collaborations.slice(0, 10).map((c) => (
+                    <tr key={c.id} className="hover:bg-white/5 transition-colors cursor-pointer" onClick={() => router.push("/collaborations")}>
+                      <td className="py-3 font-medium text-white">{(c.profiles as { full_name?: string } | null)?.full_name ?? "Creator"}</td>
+                      <td className="py-3"><Badge variant={statusVariant[c.status] ?? "gray"}>{c.status.replace("_", " ")}</Badge></td>
                     </tr>
                   ))}
                 </tbody>
@@ -227,7 +224,7 @@ function BrandDashboard({ userId }: { userId: string }) {
 function CreatorDashboard({ userId }: { userId: string }) {
   const router = useRouter();
   const [stats, setStats] = useState({ activeCollabs: 0, totalCollabs: 0, pendingReview: 0 });
-  const [collaborations, setCollaborations] = useState<{ id: string; status: string; campaigns: unknown; profiles: unknown }[]>([]);
+  const [collaborations, setCollaborations] = useState<{ id: string; status: string; profiles: unknown }[]>([]);
   const [hasBio, setHasBio] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -304,7 +301,6 @@ function CreatorDashboard({ userId }: { userId: string }) {
                 <thead>
                   <tr className="border-b border-white/10 text-[#A1A1AA]">
                     <th className="text-left pb-3 font-medium">Brand</th>
-                    <th className="text-left pb-3 font-medium">Campaign</th>
                     <th className="text-left pb-3 font-medium">Status</th>
                   </tr>
                 </thead>
@@ -312,7 +308,6 @@ function CreatorDashboard({ userId }: { userId: string }) {
                   {collaborations.map((c) => (
                     <tr key={c.id} className="hover:bg-white/5 transition-colors cursor-pointer" onClick={() => router.push("/collaborations")}>
                       <td className="py-3 font-semibold text-white">{(c.profiles as { full_name?: string } | null)?.full_name ?? "Brand"}</td>
-                      <td className="py-3 text-[#A1A1AA]">{(c.campaigns as { title?: string } | null)?.title ?? "—"}</td>
                       <td className="py-3"><Badge variant={statusVariant[c.status] ?? "gray"}>{c.status.replace("_", " ")}</Badge></td>
                     </tr>
                   ))}

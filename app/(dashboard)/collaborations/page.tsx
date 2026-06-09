@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FileText, CheckCircle, Clock, ChevronRight, Calendar, X } from "lucide-react";
+import { FileText, CheckCircle, Clock, ChevronRight, Calendar, X, Send, ExternalLink, Upload } from "lucide-react";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
@@ -13,15 +13,16 @@ type Collab = {
   id: string;
   status: string;
   deliverables: string | null;
+  content_url: string | null;
   created_at: string;
   updated_at: string;
-  campaigns: { title: string }[] | null;
   profiles: { full_name: string | null; email: string }[] | null;
 };
 
 const PIPELINE = ["invited", "agreed", "in_progress", "submitted", "approved", "completed"];
 
 const STATUS_LABEL: Record<string, string> = {
+  proposed: "Proposal Sent",
   invited: "Invited",
   agreed: "Agreed",
   in_progress: "In Progress",
@@ -32,13 +33,13 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const statusVariant: Record<string, "green" | "purple" | "blue" | "gray" | "orange"> = {
-  invited: "gray", agreed: "purple", in_progress: "blue",
+  proposed: "blue", invited: "gray", agreed: "purple", in_progress: "blue",
   submitted: "orange", approved: "green", completed: "green", rejected: "gray",
 };
 
 const statusIcon: Record<string, React.ElementType> = {
-  invited: Clock, agreed: CheckCircle, in_progress: FileText,
-  submitted: FileText, approved: CheckCircle, completed: CheckCircle, rejected: Clock,
+  proposed: Send, invited: Clock, agreed: CheckCircle, in_progress: FileText,
+  submitted: Upload, approved: CheckCircle, completed: CheckCircle, rejected: Clock,
 };
 
 export default function CollaborationsPage() {
@@ -48,6 +49,7 @@ export default function CollaborationsPage() {
   const [activeStatus, setActiveStatus] = useState("all");
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [contentUrl, setContentUrl] = useState("");
 
   useEffect(() => {
     const supabase = createClient();
@@ -77,6 +79,18 @@ export default function CollaborationsPage() {
     return idx >= 0 && idx < PIPELINE.length - 1 ? PIPELINE[idx + 1] : null;
   };
 
+  const submitContent = async (id: string, url: string) => {
+    setUpdating(true);
+    const supabase = createClient();
+    await supabase.from("collaborations")
+      .update({ content_url: url, status: "submitted", updated_at: new Date().toISOString() })
+      .eq("id", id);
+    setCollabs((prev) => prev.map((c) => c.id === id ? { ...c, content_url: url, status: "submitted" } : c));
+    setSelected((prev) => prev?.id === id ? { ...prev, content_url: url, status: "submitted" } : prev);
+    setContentUrl("");
+    setUpdating(false);
+  };
+
   if (loading) return (
     <div className="flex justify-center py-20">
       <div className="w-8 h-8 rounded-full border-2 border-[#7C5CFF] border-t-transparent animate-spin" />
@@ -94,7 +108,7 @@ export default function CollaborationsPage() {
 
       {/* Pipeline tabs */}
       <div className="flex gap-2 flex-wrap">
-        {["all", ...PIPELINE].map((s) => (
+        {["all", "proposed", ...PIPELINE].map((s) => (
           <button key={s} onClick={() => setActiveStatus(s)}
             className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer capitalize ${
               activeStatus === s
@@ -130,11 +144,9 @@ export default function CollaborationsPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-white text-sm truncate">
-                        {c.campaigns?.[0]?.title ?? "Campaign"}
-                      </p>
-                      <p className="text-xs text-[#A1A1AA] mt-0.5">
                         {c.profiles?.[0]?.full_name ?? (user?.role === "brand" ? "Creator" : "Brand")}
                       </p>
+                      <p className="text-xs text-[#A1A1AA] mt-0.5">Direct Collaboration</p>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
                       <Badge variant={statusVariant[c.status] ?? "gray"}>{STATUS_LABEL[c.status] ?? c.status}</Badge>
@@ -174,7 +186,7 @@ export default function CollaborationsPage() {
                     {(() => { const Icon = statusIcon[selected.status] ?? FileText; return <Icon size={26} className="text-white" />; })()}
                   </div>
                   <h3 className="text-lg font-extrabold text-white leading-tight">
-                    {selected.campaigns?.[0]?.title ?? "Direct Collaboration"}
+                    {selected.profiles?.[0]?.full_name ?? "Direct Collaboration"}
                   </h3>
                   <div className="mt-2 flex justify-center">
                     <Badge variant={statusVariant[selected.status] ?? "gray"}>{STATUS_LABEL[selected.status] ?? selected.status}</Badge>
@@ -223,7 +235,58 @@ export default function CollaborationsPage() {
                     </div>
                   </div>
 
-                  {nextStatus(selected.status) && selected.status !== "completed" && selected.status !== "rejected" && (
+                  {/* Brand: accept or decline a creator proposal */}
+                  {selected.status === "proposed" && user?.role === "brand" && (
+                    <div className="flex gap-2">
+                      <Button variant="primary" size="md" className="flex-1" disabled={updating}
+                        onClick={() => updateStatus(selected.id, "agreed")}>
+                        <CheckCircle size={14} /> Accept
+                      </Button>
+                      <Button variant="ghost" size="md" className="flex-1" disabled={updating}
+                        onClick={() => updateStatus(selected.id, "rejected")}>
+                        Decline
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Creator: status is proposed — waiting for brand */}
+                  {selected.status === "proposed" && user?.role === "creator" && (
+                    <p className="text-center text-xs text-[#A1A1AA]">Waiting for the brand to accept your proposal.</p>
+                  )}
+
+                  {/* Creator: submit content when in_progress */}
+                  {selected.status === "in_progress" && user?.role === "creator" && (
+                    <div className="rounded-xl p-4 border border-white/8 space-y-3" style={{ background: "rgba(255,255,255,0.04)" }}>
+                      <p className="text-[#A1A1AA] text-[11px] font-semibold uppercase tracking-widest">Submit Your Content</p>
+                      <input
+                        value={contentUrl}
+                        onChange={(e) => setContentUrl(e.target.value)}
+                        placeholder="Paste your content link (Google Drive, YouTube, etc.)"
+                        className="w-full glass rounded-xl px-3 py-2.5 text-sm text-white placeholder-[#A1A1AA] border border-white/10 focus:border-[#7C5CFF] focus:outline-none"
+                      />
+                      <Button variant="primary" size="sm" fullWidth
+                        disabled={!contentUrl.trim() || updating}
+                        onClick={() => submitContent(selected.id, contentUrl)}>
+                        <Upload size={13} /> {updating ? "Submitting…" : "Submit Content"}
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Show submitted content URL */}
+                  {selected.content_url && ["submitted", "approved", "completed"].includes(selected.status) && (
+                    <div className="rounded-xl p-4 border border-white/8" style={{ background: "rgba(255,255,255,0.04)" }}>
+                      <p className="text-[#A1A1AA] text-[11px] font-semibold uppercase tracking-widest mb-2">Submitted Content</p>
+                      <a href={selected.content_url} target="_blank" rel="noopener noreferrer"
+                        className="text-[#A855F7] text-sm hover:underline flex items-center gap-1.5 break-all">
+                        <ExternalLink size={13} className="flex-shrink-0" /> {selected.content_url}
+                      </a>
+                    </div>
+                  )}
+
+                  {/* Normal pipeline advance (skip for proposed/in_progress creator) */}
+                  {nextStatus(selected.status) && selected.status !== "completed" && selected.status !== "rejected"
+                    && selected.status !== "proposed"
+                    && !(selected.status === "in_progress" && user?.role === "creator") && (
                     <Button variant="primary" size="md" fullWidth disabled={updating}
                       onClick={() => updateStatus(selected.id, nextStatus(selected.status)!)}>
                       {updating ? "Updating…" : `Move to: ${STATUS_LABEL[nextStatus(selected.status)!] ?? nextStatus(selected.status)}`}

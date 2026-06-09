@@ -20,23 +20,23 @@ const features = [
   },
   {
     icon: Sparkles,
-    title: "AI Recommendations",
+    title: "AI Match",
     description:
-      "Our AI analyzes your campaign goals and suggests creators with the highest potential ROI.",
+      "Our AI scores creators against your goals — audience fit, engagement, niche, and platform — so you find the right partner instantly.",
     color: "#A855F7",
   },
   {
     icon: FileText,
-    title: "Campaign Management",
+    title: "Collaboration Management",
     description:
-      "Create, track, and manage all your campaigns from one clean dashboard. Full workflow automation.",
+      "Track every collab from proposal to completion. One dashboard for invites, status updates, and content review.",
     color: "#6366F1",
   },
   {
     icon: BarChart2,
-    title: "Real-Time Analytics",
+    title: "Invite & Propose",
     description:
-      "Monitor views, engagement, clicks, and conversions as they happen. No delays.",
+      "Brands invite creators, creators propose to brands — accept or decline in one click with automatic email notifications.",
     color: "#8B5CF6",
   },
   {

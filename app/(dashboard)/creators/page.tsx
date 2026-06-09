@@ -9,6 +9,7 @@ import Button from "@/components/ui/Button";
 import InviteModal from "@/components/ui/InviteModal";
 import UserAvatar from "@/components/ui/UserAvatar";
 import { getCreatorProfiles } from "@/lib/supabase/queries";
+import { createClient } from "@/lib/supabase/client";
 import { GOAL_WEIGHTS, matchLabel } from "@/lib/matcher";
 
 type CreatorProfile = {
@@ -104,26 +105,77 @@ export default function CreatorsPage() {
   const [showAll, setShowAll] = useState(false);
   const [selected, setSelected] = useState<{ creator: CreatorProfile; idx: number } | null>(null);
   const [inviting, setInviting] = useState<{ id: string; name: string; avatar: string; niche: string; email: string } | null>(null);
+  const [filterNiche, setFilterNiche] = useState("All");
+  const [filterFollowers, setFilterFollowers] = useState(0);
+  const [invitedIds, setInvitedIds] = useState<Set<string>>(new Set());
+  const [personaPreFilled, setPersonaPreFilled] = useState(false);
+
+  const GOAL_MAP: Record<string, string> = {
+    "Brand Awareness": "Reach — Maximum audience exposure",
+    "Engagement":      "Engagement — Active, responsive audience",
+    "Community Growth":"Engagement — Active, responsive audience",
+    "Sales":           "Balanced — All factors matter equally",
+  };
 
   useEffect(() => {
+    const inviteId = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("invite") : null;
     getCreatorProfiles().then((data) => {
-      setCreators(data as CreatorProfile[]);
+      const profiles = data as CreatorProfile[];
+      setCreators(profiles);
       setLoading(false);
+      if (inviteId) {
+        const target = profiles.find((c) => c.id === inviteId);
+        if (target) {
+          setInviting({ id: target.id, name: target.full_name ?? target.email, avatar: initials(target.full_name, target.email), niche: target.category ?? "Creator", email: target.email });
+        }
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return;
+
+      const { data: collabData } = await supabase.from("collaborations").select("creator_id").eq("brand_id", user.id);
+      if (collabData) setInvitedIds(new Set(collabData.map((d: { creator_id: string }) => d.creator_id)));
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("category, persona_campaign_goals")
+        .eq("id", user.id)
+        .single();
+
+      if (profile) {
+        let filled = false;
+        if (profile.category && ALL_CATEGORIES.includes(profile.category)) {
+          setNiches([profile.category]);
+          filled = true;
+        }
+        if (profile.persona_campaign_goals) {
+          const firstGoal = profile.persona_campaign_goals.split(",")[0].trim();
+          const mapped = GOAL_MAP[firstGoal];
+          if (mapped) { setGoal(mapped); filled = true; }
+        }
+        if (filled) setPersonaPreFilled(true);
+      }
     });
   }, []);
 
   const filtered = creators.filter((c) => {
     const name = c.full_name ?? c.email;
-    return (
+    const matchesSearch =
       name.toLowerCase().includes(search.toLowerCase()) ||
       (c.bio ?? "").toLowerCase().includes(search.toLowerCase()) ||
       c.email.toLowerCase().includes(search.toLowerCase()) ||
-      (c.category ?? "").toLowerCase().includes(search.toLowerCase())
-    );
+      (c.category ?? "").toLowerCase().includes(search.toLowerCase());
+    const matchesNiche = filterNiche === "All" || c.category === filterNiche;
+    const matchesFollowers = filterFollowers === 0 || (c.followers ?? 0) >= filterFollowers;
+    return matchesSearch && matchesNiche && matchesFollowers;
   });
   const visible = showAll ? filtered : filtered.slice(0, INITIAL_COUNT);
 
-  useEffect(() => { setShowAll(false); }, [search]);
+  useEffect(() => { setShowAll(false); }, [search, filterNiche, filterFollowers]);
 
   const runMatch = async () => {
     if (niches.length === 0) { setMatchError("Pick at least one content category."); return; }
@@ -174,6 +226,13 @@ export default function CreatorsPage() {
             <h3 className="font-bold text-white mb-4 flex items-center gap-2">
               <Sparkles size={16} className="text-[#A855F7]" /> Tell us about your campaign
             </h3>
+
+            {personaPreFilled && (
+              <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-xl bg-[#7C5CFF]/10 border border-[#7C5CFF]/25 text-xs text-[#A855F7]">
+                <Sparkles size={12} />
+                Criteria pre-filled from your Brand Persona · <a href="/settings" className="underline hover:text-white transition-colors">Edit Persona</a>
+              </div>
+            )}
 
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-4">
@@ -392,6 +451,35 @@ export default function CreatorsPage() {
             </div>
           </div>
 
+          {/* Category filter */}
+          <div className="flex gap-2 flex-wrap">
+            {["All", ...ALL_CATEGORIES].map((cat) => (
+              <button key={cat} onClick={() => setFilterNiche(cat)}
+                className={`text-xs px-3 py-1.5 rounded-full border transition-all cursor-pointer ${
+                  filterNiche === cat
+                    ? "bg-[#7C5CFF]/20 border-[#7C5CFF]/50 text-white"
+                    : "border-white/10 text-[#A1A1AA] hover:border-white/30"
+                }`}>
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Audience size filter */}
+          <div className="flex gap-2 flex-wrap items-center">
+            <span className="text-xs text-[#A1A1AA] flex-shrink-0">Audience:</span>
+            {AUDIENCE_OPTIONS.map((o) => (
+              <button key={o.label} onClick={() => setFilterFollowers(o.value)}
+                className={`text-xs px-3 py-1.5 rounded-full border transition-all cursor-pointer ${
+                  filterFollowers === o.value
+                    ? "bg-[#7C5CFF]/20 border-[#7C5CFF]/50 text-white"
+                    : "border-white/10 text-[#A1A1AA] hover:border-white/30"
+                }`}>
+                {o.label}
+              </button>
+            ))}
+          </div>
+
           {filtered.length === 0 ? (
             <Card hover={false}>
               <div className="text-center py-14">
@@ -423,8 +511,15 @@ export default function CreatorsPage() {
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-1 text-[10px] font-semibold text-[#A855F7] bg-[#7C5CFF]/15 border border-[#7C5CFF]/30 rounded-full px-2 py-0.5">
-                          <Sparkles size={9} /> {creator.category ?? "Creator"}
+                        <div className="flex flex-col items-end gap-1.5">
+                          <div className="flex items-center gap-1 text-[10px] font-semibold text-[#A855F7] bg-[#7C5CFF]/15 border border-[#7C5CFF]/30 rounded-full px-2 py-0.5">
+                            <Sparkles size={9} /> {creator.category ?? "Creator"}
+                          </div>
+                          {invitedIds.has(creator.id) && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 font-semibold">
+                              ✓ Collab
+                            </span>
+                          )}
                         </div>
                       </div>
 
